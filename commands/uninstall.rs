@@ -23,8 +23,9 @@ use get_package::{get_package, Package as get_package_struct};
 use handle_error::handle_error_and_exit;
 
 pub fn uninstaller(packages: Vec<String>) {
-    // let mut handles = vec![];
+    let mut handles = vec![];
     let mut sizes = vec![];
+    let mut multi = false;
     for pkg in packages.iter() {
         let package: get_package_struct = get_package(pkg.as_str());
         sizes.push(package.versions[&package.latest_version].size);
@@ -35,25 +36,33 @@ pub fn uninstaller(packages: Vec<String>) {
             max_size = sizes[i];
         }
     }
-    println!("{}", "Uninstalling Packages".bright_green());
+    if sizes.len() > 1 {
+        multi = true;
+        println!("{}", "Uninstalling Packages".bright_green());
+    }
     for pkg in packages.iter() {
         let pkg_clone = pkg.clone();
         let package: get_package_struct = get_package(pkg_clone.as_str());
         let latest_version = package.latest_version;
         let display_name = package.display_name;
         let uswitch = package.versions[&latest_version].uswitches.clone();
-        // let package_name = package.package_name;
-        // let exists = check_cache(package_name.clone(), latest_version.clone());
-        // handles.push(std::thread::spawn(move|| {
-        //     if !exists {
-        uninstall(display_name, uswitch, false);
-        // }
-        // }));
+        if multi == false {
+            println!(
+                "{} {}",
+                "Uninstalling".bright_green(),
+                display_name.bright_green()
+            );
+        }
+        handles.push(std::thread::spawn(move || {
+            uninstall(display_name, uswitch, multi);
+        }));
     }
-    // for handle in handles {
-    // handle.join().unwrap();
-    // }
-    println!("{}", "Successfully installed packages".bright_magenta());
+    for handle in handles {
+        handle
+            .join()
+            .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string()));
+    }
+    println!("{}", "Successfully uninstalled packages".bright_magenta());
 }
 
 #[allow(unused_assignments)]
@@ -62,7 +71,10 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, multi: bool) {
     uninstall_string = uninstall_string.clone();
     let split: Vec<&str> = uninstall_string.split(".exe").collect();
     let mut args: Vec<&str> = vec![];
-    let splits = split[1].replace("\"", "").replace("/I", "/x");
+    let mut splits = split[1].replace("\"", "");
+    if split[1].contains("/I") {
+        splits = splits.replace("/I", "/x");
+    }
     for arg in splits.split(" ") {
         if arg != "" {
             args.push(arg);
@@ -74,8 +86,8 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, multi: bool) {
         }
     }
     uninstall_string = (split[0].to_string() + ".exe\"").replace("\"", "");
-    println!("args: {:?}", args);
-    println!("uninstall_string: {}", uninstall_string);
+    // println!("args: {:?}", args);
+    // println!("uninstall_string: {}", uninstall_string);
 
     let progress_bar = ProgressBar::new(9999999);
     let pb = progress_bar.clone();
@@ -110,11 +122,10 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, multi: bool) {
         .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     pb.finish_and_clear();
-    std::process::exit(0);
 }
 
 pub fn get_unins_string(display_name: String) -> String {
-    println!("display_name: {}", display_name);
+    // println!("display_name: {}", display_name);
     let mut regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
     let mut uninstall_string: String = "NULL".to_string();
     for i in 0..2 {
@@ -166,7 +177,7 @@ pub fn get_unins_string(display_name: String) -> String {
             let app_name: String = unins_path
                 .get_value("DisplayName")
                 .unwrap_or("NULL".to_string());
-            // println!("app name: {}", app_name);
+            // println!("app name 2: {}", app_name);
             if app_name
                 .to_lowercase()
                 .starts_with(display_name.to_lowercase().as_str())
@@ -176,6 +187,10 @@ pub fn get_unins_string(display_name: String) -> String {
                     .unwrap_or("NO_STRING".to_string());
             }
         }
+    }
+
+    if uninstall_string == "NULL" {
+        handle_error_and_exit(format!("Failed to uninstall {}", display_name));
     }
 
     uninstall_string.replace("\\", "/")

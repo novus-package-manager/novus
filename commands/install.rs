@@ -48,6 +48,13 @@ pub fn installer(packages: Vec<String>) {
         let package: get_package_struct = get_package(pkg_clone.as_str());
         let latest_version = package.latest_version;
         let display_name = package.display_name;
+        if multi == false {
+            println!(
+                "{} {}",
+                "Installing".bright_green(),
+                display_name.bright_green()
+            );
+        }
         let url = package.versions[&latest_version].url.clone();
         let threads = package.versions[&latest_version].threads.clone();
         let iswitch = package.versions[&latest_version].iswitches.clone();
