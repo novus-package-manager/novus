@@ -232,15 +232,12 @@ pub fn install(iswitch: &Vec<String>, output_file: String, display_name: String,
             )
         }
 
+        progress_bar.clone().enable_steady_tick(150);
+
         progress_bar.clone().set_style(
             ProgressStyle::default_spinner()
                 .template(("{spinner:.green}".to_string() + format!(" {}", text).as_str()).as_str())
-                .tick_chars("-\\|/"),
-        );
-        loop {
-            progress_bar.inc(5);
-            std::thread::sleep(std::time::Duration::from_millis(100))
-        }
+                .tick_chars("┤┘┴└├┌┬┐ "));        
     });
     let _cmd = std::process::Command::new(output_file)
         .arg(iswitch.join(" "))
