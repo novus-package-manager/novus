@@ -1,34 +1,19 @@
-#[path = "../utils/get_package.rs"]
-mod get_package;
-
-#[path = "../utils/cache.rs"]
-mod cache;
-
-#[path = "../models/package.rs"]
-mod package;
-
-#[path = "../utils/handle_error.rs"]
-mod handle_error;
-
-use handle_error::handle_error_and_exit;
 use colored::Colorize;
-pub use crate::get_package::Package;
-use cache::delete_temp_cache;
+use crate::utils::{cache, handle_error, get_package};
+use crate::classes::package::Package;
+use handle_error::handle_error_and_exit;
 use std::{fs::File, u64};
 use std::io::{BufWriter, Write, BufReader};
 use indicatif::{ProgressBar, ProgressStyle};
-
-// use std::time::Instant;
-
 use cache::check_cache;
-use get_package::{get_package, Package as get_package_struct};
+use get_package::get_package;
 
-pub fn installer(packages: Vec<String>) {
+pub fn updater(packages: Vec<String>) {
   let mut handles = vec![];
   let mut sizes = vec![];
   let mut multi = false; 
   for pkg in packages.iter() { 
-      let package: get_package_struct = get_package(pkg.as_str());
+      let package: Package = get_package(pkg.as_str());
       sizes.push(package.versions[&package.latest_version].size);
   }            
   let mut max_size = sizes[0];
@@ -45,7 +30,7 @@ pub fn installer(packages: Vec<String>) {
   for pkg in packages.iter() {  
       let mut max = true;       
       let pkg_clone = pkg.clone();   
-      let package: get_package_struct = get_package(pkg_clone.as_str());
+      let package: Package = get_package(pkg_clone.as_str());
       let latest_version = package.latest_version;
       let display_name = package.display_name;
       let url = package.versions[&latest_version].url.clone();
@@ -66,7 +51,7 @@ pub fn installer(packages: Vec<String>) {
       }));
   }
   for handle in handles {
-      handle.join().unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+      handle.join().unwrap_or_else(|e| handle_error_and_exit("Failed to join handles".to_string()));
   }
   println!("{}", "Successfully installed packages".bright_magenta());
 }
@@ -157,8 +142,6 @@ pub async fn threadeddownload(url: String, output: String, threads: u64, display
     let _ = std::io::copy(&mut reader, &mut buf);
     let _ = file.write_all(&buf);
   }  
-
-  delete_temp_cache(package_name, threads);
 
   // println!("download time: {:?}", start.elapsed());
 }

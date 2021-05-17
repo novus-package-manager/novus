@@ -1,18 +1,8 @@
-#[path = "../utils/get_package.rs"]
-mod get_package;
-
-#[path = "../utils/cache.rs"]
-mod cache;
-
-#[path = "../models/package.rs"]
-mod package;
-
-#[path = "../utils/handle_error.rs"]
-mod handle_error;
-
-use sha2::{Sha256, Digest};
-pub use crate::get_package::Package;
-use cache::delete_temp_cache;
+use crate::utils::{checksum, handle_error, cache, get_package};
+use get_package::{get_package};
+use crate::classes::package::Package;
+use checksum::verify_checksum;
+use cache::check_cache;
 use colored::Colorize;
 use handle_error::handle_error_and_exit;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -21,15 +11,12 @@ use std::{fs::File, u64};
 
 // use std::time::Instant;
 
-use cache::check_cache;
-use get_package::{get_package, Package as get_package_struct};
-
 pub fn installer(packages: Vec<String>) {
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
     for pkg in packages.iter() {
-        let package: get_package_struct = get_package(pkg.as_str());
+        let package: Package = get_package(pkg.as_str());
         sizes.push(package.versions[&package.latest_version].size);
     }
     let mut max_size = sizes[0];
@@ -46,7 +33,7 @@ pub fn installer(packages: Vec<String>) {
     for pkg in packages.iter() {
         let mut max = true;
         let pkg_clone = pkg.clone();
-        let package: get_package_struct = get_package(pkg_clone.as_str());
+        let package: Package = get_package(pkg_clone.as_str());
         let latest_version = package.latest_version;
         let display_name = package.display_name;
         if multi == false {
@@ -187,31 +174,24 @@ pub async fn threadeddownload(
     let mut file =
         File::create(output.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
+    let temp = std::env::var("TEMP").unwrap();
+
     for index in 0..threads {
         let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file =
-            File::open(loc).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            File::open(loc.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let mut reader = BufReader::new(downloaded_file);
         let _ = std::io::copy(&mut reader, &mut buf);
-        let _ = file.write_all(&buf);
-    }
+        let _ = file.write_all(&buf);        
+        let _ = std::fs::remove_file(loc);
+    }    
 
-    let mut file = File::open(output.clone()).unwrap();
-    let mut hasher = Sha256::new();
-    std::io::copy(&mut file, &mut hasher).unwrap();
-    let hash = format!("{:x}", hasher.finalize());
+    tokio::spawn(async move {
+        verify_checksum(output, checksum)
+    });
 
-    println!("hash: {}", hash);
-
-    if hash.to_uppercase() == checksum.to_uppercase() {
-        // Verified Checksum
-        println!("{}", "Successfully Verified Hash".bright_green());
-    } else {
-        println!("{}", "Failed To Verify Hash".bright_red())
-    }
-
-    delete_temp_cache(package_name, threads);
+    // delete_temp_cache(package_name, threads);
 
     // println!("download time: {:?}", start.elapsed());
 }

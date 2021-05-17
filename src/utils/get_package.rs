@@ -1,14 +1,10 @@
-#[path = "../models/package.rs"]
-pub mod package;
-
 use std::process;
-
-pub use package::Package;
+use crate::classes::package::Package;
 use reqwest::blocking::get;
 use serde_json::{from_str, to_string_pretty, Value};
 
 #[allow(unused)]
-pub fn get_package(package_name: &str) -> package::Package {
+pub fn get_package(package_name: &str) -> Package {
 //     let mut file_contents = String::new();
 //     match get(format!("https://raw.githubusercontent.com/novus-package-manager/novus-packages/master/packages/{}.json", package_name)) {
 //     Ok(response) => {

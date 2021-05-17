@@ -1,29 +1,16 @@
-#[path = "../utils/display_help.rs"]
-mod display_help;
-
-#[path = "../utils/handle_args.rs"]
-mod handle_args;
-
-#[path = "../commands/install.rs"]
-mod install;
-
-#[path = "../commands/uninstall.rs"]
-mod uninstall;
-
-#[path = "../utils/get_package.rs"]
-mod get_package;
-
-#[path = "../utils/handle_error.rs"]
-mod handle_error;
-
+mod commands;
+mod classes;
+mod utils;
+use commands::{install, uninstall};
+use utils::{handle_error, get_package, handle_args, display_help};
 use colored::Colorize;
 use display_help::display_help;
 use handle_args::{get_arguments, verify_args};
 use handle_error::handle_error_and_exit;
 use install::installer;
 use serde_json::Value;
-// use std::time::Instant;
 use uninstall::uninstaller;
+// use std::time::Instant;
 
 #[allow(unused)]
 fn main() {

@@ -1,11 +1,3 @@
-#[path = "../utils/get_package.rs"]
-mod get_package;
-
-#[path = "../utils/cache.rs"]
-mod cache;
-
-#[path = "../models/package.rs"]
-mod package;
 
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
@@ -13,13 +5,13 @@ use std::vec;
 extern crate winreg;
 use winreg::enums::*;
 use winreg::RegKey;
-
-pub use crate::get_package::Package;
+use crate::classes::package::Package;
+use crate::utils::get_package;
 
 #[path = "../utils/handle_error.rs"]
 mod handle_error;
 
-use get_package::{get_package, Package as get_package_struct};
+use get_package::{get_package};
 use handle_error::handle_error_and_exit;
 
 pub fn uninstaller(packages: Vec<String>) {
@@ -27,7 +19,7 @@ pub fn uninstaller(packages: Vec<String>) {
     let mut sizes = vec![];
     let mut multi = false;
     for pkg in packages.iter() {
-        let package: get_package_struct = get_package(pkg.as_str());
+        let package: Package = get_package(pkg.as_str());
         sizes.push(package.versions[&package.latest_version].size);
     }
     let mut max_size = sizes[0];
@@ -42,7 +34,7 @@ pub fn uninstaller(packages: Vec<String>) {
     }
     for pkg in packages.iter() {
         let pkg_clone = pkg.clone();
-        let package: get_package_struct = get_package(pkg_clone.as_str());
+        let package: Package = get_package(pkg_clone.as_str());
         let latest_version = package.latest_version;
         let display_name = package.display_name;
         let uswitch = package.versions[&latest_version].uswitches.clone();
