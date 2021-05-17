@@ -10,6 +10,7 @@ mod package;
 #[path = "../utils/handle_error.rs"]
 mod handle_error;
 
+use sha2::{Sha256, Digest};
 pub use crate::get_package::Package;
 use cache::delete_temp_cache;
 use colored::Colorize;
@@ -56,6 +57,7 @@ pub fn installer(packages: Vec<String>) {
             );
         }
         let url = package.versions[&latest_version].url.clone();
+        let checksum = package.versions[&latest_version].checksum.clone();
         let threads = package.versions[&latest_version].threads.clone();
         let iswitch = package.versions[&latest_version].iswitches.clone();
         let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
@@ -64,18 +66,10 @@ pub fn installer(packages: Vec<String>) {
         if package.versions[&latest_version].size != max_size {
             max = false;
         }
-        let exists = check_cache(package_name.clone(), latest_version);
+        let exists = check_cache(package_name.clone(), latest_version.clone());
         handles.push(std::thread::spawn(move || {
             if !exists {
-                threadeddownload(
-                    url,
-                    loc.clone(),
-                    threads,
-                    display_name.clone(),
-                    package_name,
-                    max,
-                    multi,
-                );
+                threadeddownload(url, loc.clone(), threads, package_name, checksum, max);
             }
             install(&iswitch, loc.clone(), display_name, multi);
         }));
@@ -110,10 +104,9 @@ pub async fn threadeddownload(
     url: String,
     output: String,
     threads: u64,
-    display_name: String,
     package_name: String,
+    checksum: String,
     max: bool,
-    multi: bool,
 ) {
     // let start = Instant::now();
     let mut handles = vec![];
@@ -125,15 +118,11 @@ pub async fn threadeddownload(
         .unwrap_or_else(|| handle_error_and_exit("An Unexpected Error Occured!".to_string()));
     let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
-    if !multi {
-        println!("{}", format!("Installing {}", display_name))
-    }
-
     if max {
         let progress_bar = ProgressBar::new(total_length);
         progress_bar.set_style(ProgressStyle::default_bar()
-              .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
-              .progress_chars("#>-"));
+              .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue/magenta}] {bytes}/{total_bytes} ({eta})")
+              .progress_chars("=>-"));
 
         for index in 0..threads {
             let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
@@ -206,6 +195,20 @@ pub async fn threadeddownload(
         let mut reader = BufReader::new(downloaded_file);
         let _ = std::io::copy(&mut reader, &mut buf);
         let _ = file.write_all(&buf);
+    }
+
+    let mut file = File::open(output.clone()).unwrap();
+    let mut hasher = Sha256::new();
+    std::io::copy(&mut file, &mut hasher).unwrap();
+    let hash = format!("{:x}", hasher.finalize());
+
+    println!("hash: {}", hash);
+
+    if hash.to_uppercase() == checksum.to_uppercase() {
+        // Verified Checksum
+        println!("{}", "Successfully Verified Hash".bright_green());
+    } else {
+        println!("{}", "Failed To Verify Hash".bright_red())
     }
 
     delete_temp_cache(package_name, threads);

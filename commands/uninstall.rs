@@ -54,7 +54,7 @@ pub fn uninstaller(packages: Vec<String>) {
             );
         }
         handles.push(std::thread::spawn(move || {
-            uninstall(display_name, uswitch, multi);
+            uninstall(display_name, uswitch);
         }));
     }
     for handle in handles {
@@ -66,7 +66,7 @@ pub fn uninstaller(packages: Vec<String>) {
 }
 
 #[allow(unused_assignments)]
-pub fn uninstall(display_name: String, uswitches: Vec<String>, multi: bool) {
+pub fn uninstall(display_name: String, uswitches: Vec<String>) {
     let mut uninstall_string = get_unins_string(display_name.clone());
     uninstall_string = uninstall_string.clone();
     let split: Vec<&str> = uninstall_string.split(".exe").collect();
@@ -94,15 +94,15 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, multi: bool) {
 
     std::thread::spawn(move || {
         let mut text = String::new();
-        if multi {
-            text = format!("{}", "Uninstalling Packages".bright_cyan());
-        } else {
-            text = format!(
-                "{}{}",
-                "Uninstalling ".bright_cyan(),
-                display_name.bright_cyan()
-            )
-        }
+        // if multi {
+        //     text = format!("{}", "Uninstalling Packages".bright_cyan());
+        // } else {
+        text = format!(
+            "{}{}",
+            "Uninstalling ".bright_cyan(),
+            display_name.bright_cyan()
+        );
+        // }
 
         progress_bar.clone().set_style(
             ProgressStyle::default_spinner()

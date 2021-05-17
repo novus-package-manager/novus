@@ -20,4 +20,5 @@ pub struct VersionData  {
   pub iswitches: Vec<String>,
   pub uswitches: Vec<String>,
   pub dependencies: Vec<String>,
+  pub checksum: String,
 }
