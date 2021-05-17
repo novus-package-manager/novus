@@ -19,6 +19,5 @@ pub struct VersionData  {
   pub file_type: String,
   pub iswitches: Vec<String>,
   pub uswitches: Vec<String>,
-  pub dependencies: Vec<String>,
   pub checksum: String,
 }
