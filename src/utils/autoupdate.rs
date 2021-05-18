@@ -4,7 +4,7 @@ use reqwest::blocking::get;
 use crate::commands::install::threadeddownload;
 
 pub fn get_latest_version(package_name: &str) {
-    let mut package: Package = get_package(package_name.clone());
+    let package: Package = get_package(package_name.clone());
     let mut temp_package: Package = package.clone();
     let url = package.autoupdate.download_page;
     println!("url: {}", url);
@@ -82,7 +82,13 @@ pub fn get_latest_version(package_name: &str) {
         // Re-open file to replace the contents:
         let file = std::fs::File::create(format!("../novus-packages/packages/{}.json", package_name)).unwrap(); 
         serde_json::to_writer_pretty(file, &temp_package).unwrap();
-    }
-    std::process::Command::new("powershell").args(&["git", "add", "."]).output().expect("FAILED");
 
+        let dir = std::path::Path::new(r"D:\prana\Programming\My Projects\novus-package-manager\novus-packages");
+        let _ = std::env::set_current_dir(dir);
+        let mut commit = format!("autoupdater: Updated {}", package_name);
+        commit = "\"".to_string() + commit.as_str() + "\"";
+        std::process::Command::new("powershell").args(&["git", "add", "."]).output().expect("Failed to add");
+        std::process::Command::new("powershell").args(&["git", "commit", "-m", commit.as_str()]).output().expect("Failed to commit");
+        std::process::Command::new("powershell").args(&["git", "push"]).output().expect("Failed to push");
+    }
 }

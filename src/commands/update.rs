@@ -8,6 +8,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use cache::check_cache;
 use get_package::get_package;
 
+#[allow(unused)]
 pub fn updater(packages: Vec<String>) {
   let mut handles = vec![];
   let mut sizes = vec![];
@@ -51,7 +52,7 @@ pub fn updater(packages: Vec<String>) {
       }));
   }
   for handle in handles {
-      handle.join().unwrap_or_else(|e| handle_error_and_exit("Failed to join handles".to_string()));
+      handle.join().unwrap_or_else(|_| handle_error_and_exit("Failed to join handles".to_string()));
   }
   println!("{}", "Successfully installed packages".bright_magenta());
 }
