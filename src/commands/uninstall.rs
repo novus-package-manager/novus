@@ -35,9 +35,8 @@ pub fn uninstaller(packages: Vec<String>) {
     for pkg in packages.iter() {
         let pkg_clone = pkg.clone();
         let package: Package = get_package(pkg_clone.as_str());
-        let latest_version = package.latest_version;
         let display_name = package.display_name;
-        let uswitch = package.versions[&latest_version].uswitches.clone();
+        let uswitch = package.uswitches.clone();
         if multi == false {
             println!(
                 "{} {}",

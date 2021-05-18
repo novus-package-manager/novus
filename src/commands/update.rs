@@ -33,9 +33,9 @@ pub fn updater(packages: Vec<String>) {
       let package: Package = get_package(pkg_clone.as_str());
       let latest_version = package.latest_version;
       let display_name = package.display_name;
-      let url = package.versions[&latest_version].url.clone();
-      let threads = package.versions[&latest_version].threads.clone();
-      let iswitch = package.versions[&latest_version].iswitches.clone();
+      let threads = package.threads;
+      let url = package.versions[&latest_version].url.clone();     
+      let iswitch = package.iswitches.clone();
       let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
       let package_name = package.package_name;
       let loc = format!(r"{}\novus\{}@{}.exe", temp, package_name, latest_version);

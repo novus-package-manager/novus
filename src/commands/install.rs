@@ -36,6 +36,7 @@ pub fn installer(packages: Vec<String>) {
         let package: Package = get_package(pkg_clone.as_str());
         let latest_version = package.latest_version;
         let display_name = package.display_name;
+        let threads = package.threads;
         if multi == false {
             println!(
                 "{} {}",
@@ -44,9 +45,8 @@ pub fn installer(packages: Vec<String>) {
             );
         }
         let url = package.versions[&latest_version].url.clone();
-        let checksum = package.versions[&latest_version].checksum.clone();
-        let threads = package.versions[&latest_version].threads.clone();
-        let iswitch = package.versions[&latest_version].iswitches.clone();
+        let checksum = package.versions[&latest_version].checksum.clone();        
+        let iswitch = package.iswitches.clone();
         let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let package_name = package.package_name;
         let loc = format!(r"{}\novus\{}@{}.exe", temp, package_name, latest_version);
@@ -56,7 +56,7 @@ pub fn installer(packages: Vec<String>) {
         let exists = check_cache(package_name.clone(), latest_version.clone());
         handles.push(std::thread::spawn(move || {
             if !exists {
-                threadeddownload(url, loc.clone(), threads, package_name, checksum, max);
+                threadeddownload(url, loc.clone(), threads, package_name, checksum, true, max);
             }
             install(&iswitch, loc.clone(), display_name, multi);
         }));
@@ -93,6 +93,7 @@ pub async fn threadeddownload(
     threads: u64,
     package_name: String,
     checksum: String,
+    get_checksum: bool,
     max: bool,
 ) {
     // let start = Instant::now();
@@ -188,7 +189,9 @@ pub async fn threadeddownload(
     }    
 
     tokio::spawn(async move {
-        verify_checksum(output, checksum)
+        if get_checksum {
+            verify_checksum(output, checksum);
+        }
     });
 
     // delete_temp_cache(package_name, threads);

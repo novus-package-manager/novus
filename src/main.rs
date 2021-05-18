@@ -2,7 +2,7 @@ mod commands;
 mod classes;
 mod utils;
 use commands::{install, uninstall};
-use utils::{handle_error, get_package, handle_args, display_help};
+use utils::{handle_error, get_package, handle_args, display_help, autoupdate};
 use colored::Colorize;
 use display_help::display_help;
 use handle_args::{get_arguments, verify_args};
@@ -50,7 +50,7 @@ fn main() {
         })
         .collect();
 
-    let (flags, packages) = verify_args(flags, packages, command, package_list);
+    let (flags, packages) = verify_args(flags, packages, command, package_list);    
 
     match command.as_str() {
         "install" => {
@@ -58,7 +58,9 @@ fn main() {
         }
         "uninstall" => {
             uninstaller(packages);
-            // println!("total time: {:?}", start.elapsed());
+        }
+        "auto" => {
+            autoupdate::get_latest_version("7-zip");
         }
         &_ => {}
     }

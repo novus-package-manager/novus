@@ -1,23 +1,31 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-#[derive(Deserialize, Debug)]
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Package {
   pub package_name: String,
   pub display_name: String,
   pub latest_version: String,
   pub creator: String,
   pub home_page: String,
-  #[serde(flatten)]
+  pub threads: u64,
+  pub iswitches: Vec<String>,
+  pub uswitches: Vec<String>,
+  // #[serde(flatten)]  
+  pub autoupdate: AutoUpdateData,
+  #[serde(flatten)]  
   pub versions: HashMap<String, VersionData>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct VersionData  {
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct AutoUpdateData {
+  pub download_page: String,
+  pub regex: String,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct VersionData {
   pub url: String,
-  pub threads: u64,
   pub size: u64,
-  pub file_type: String,
-  pub iswitches: Vec<String>,
-  pub uswitches: Vec<String>,
   pub checksum: String,
 }

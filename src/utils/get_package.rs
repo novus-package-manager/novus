@@ -2,6 +2,7 @@ use std::process;
 use crate::classes::package::Package;
 use reqwest::blocking::get;
 use serde_json::{from_str, to_string_pretty, Value};
+use crate::utils::handle_error::handle_error_and_exit;
 
 #[allow(unused)]
 pub fn get_package(package_name: &str) -> Package {
@@ -24,8 +25,8 @@ pub fn get_package(package_name: &str) -> Package {
     // let file_contents = read_to_string(loc).unwrap();
     // from_str::<Package>(&file_contents).unwrap()
     let loc = format!(r"../novus-packages/packages/{}.json", package_name);
-    let file_contents = std::fs::read_to_string(loc).unwrap();
-    from_str::<Package>(&file_contents).unwrap()
+    let file_contents = std::fs::read_to_string(loc).unwrap_or_else(|e| handle_error_and_exit(format!("{} get_package.rs:28", e.to_string())));
+    from_str::<Package>(&file_contents).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
 }
 
 #[allow(unused)]
@@ -47,8 +48,8 @@ pub fn get_packages() -> String {
     }
     Err(err) => eprintln!("Failed To Send Request: {}", err),
   }
-    let content: Value = from_str(file_contents.as_str()).unwrap();
-    to_string_pretty(&content).unwrap()
+    let content: Value = from_str(file_contents.as_str()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    to_string_pretty(&content).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
     // let loc = format!(r"../novus-packages/package-list.json");
     // std::fs::read_to_string(loc).unwrap()
     // from_str::<Package>(&file_contents).unwrap()

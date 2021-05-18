@@ -89,6 +89,7 @@ pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
             || command == "uninstall"
             || command == "update"
             || command == "list"
+            || command == "auto"
         {
             if args[arg].starts_with("--") {
                 flags.push(args[arg].clone());
