@@ -1,6 +1,7 @@
 mod commands;
 mod classes;
 mod utils;
+mod constants;
 use commands::{install, uninstall};
 use utils::{handle_error, get_package, handle_args, display_help, autoupdate};
 use colored::Colorize;
@@ -10,6 +11,7 @@ use handle_error::handle_error_and_exit;
 use install::installer;
 use serde_json::Value;
 use uninstall::uninstaller;
+use clokwerk::{Scheduler, TimeUnits};
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -17,6 +19,9 @@ fn main() {
     let _ = ansi_term::enable_ansi_support();
 
     create_dirs();
+
+    let mut scheduler = Scheduler::new();
+    scheduler.every(5.seconds()).run(|| println!("Periodic task"));
 
     ctrlc::set_handler(move || {
         println!("\n{}", "Aborted!".bright_blue());
@@ -50,7 +55,7 @@ fn main() {
         })
         .collect();
 
-    let (flags, packages) = verify_args(flags, packages, command, package_list);    
+    let (flags, packages) = verify_args(flags, packages, command, package_list.clone());    
 
     match command.as_str() {
         "install" => {
@@ -60,7 +65,10 @@ fn main() {
             uninstaller(packages);
         }
         "auto" => {
-            autoupdate::get_latest_version("7-zip");
+            autoupdate::get_latest_version("brave");
+        }
+        "list" => {
+            constants::help_menu::list_packages(package_list);
         }
         &_ => {}
     }

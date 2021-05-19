@@ -21,3 +21,4 @@ ctrlc = { version = "3.0", features = ["termination"] }
 difflib = "0.4.0"
 sha2 = "0.9.5"
 regex = "1.5.4"
+clokwerk = "0.3.5"

@@ -11,7 +11,6 @@ pub struct Package {
   pub threads: u64,
   pub iswitches: Vec<String>,
   pub uswitches: Vec<String>,
-  // #[serde(flatten)]  
   pub autoupdate: AutoUpdateData,
   #[serde(flatten)]  
   pub versions: HashMap<String, VersionData>,
@@ -20,6 +19,7 @@ pub struct Package {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct AutoUpdateData {
   pub download_page: String,
+  pub download_url: String,
   pub regex: String,
 }
 

@@ -11,21 +11,27 @@ Usage: {} {} [<options>]
 
 Commands:
 
-  {} {} - Installs packages.
-  {} {} - Uninstalls packages.
-  {} {} - Updates packages.
-  {} {} - Lists all packages."#,
+  {} {} {} Installs packages.
+  {} {} {} Uninstalls packages.
+  {} {} Updates packages.
+  {} {} {} Lists all packages.
+  
+Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
-        "novus".bright_green().bold(),
+        "novus".bright_green(),
         "[command]".white(),
         "*".bright_magenta().bold(),
         "install".bright_blue(),
+        "(i)".yellow(),
         "*".bright_magenta().bold(),
         "uninstall".bright_blue(),
+        "(u)".yellow(),
         "*".bright_magenta().bold(),
         "update".bright_blue(),
         "*".bright_magenta().bold(),
-        "list".bright_blue()
+        "list".bright_blue(),
+        "(search)".yellow(),
+        "novus [command] --help".bright_green(),
     );
 
     println!("{}", about);
@@ -37,23 +43,26 @@ pub fn install_help() {
         r#"
 Novus Package Manager {}
 
-Installs a package
+Installs a package or a list of packages
 
 Usage: {} {} {} {}
     
 Options:
     
   {} {} Disable colored output for installation.  
+  {} {} Disables progress bar for installation.
   {} {} Output verbose messages on internal operations."#,
         __VERSION__.bright_green().bold(),
-        "novus".bright_green().bold(),
+        "novus".bright_green(),
         "install".bright_purple(),
         "[package]".white(),
         "[flags]".white(),
-        "--no-color".blue(),
+        "--no-color".bright_blue(),
         "(-nc)".yellow(),
-        "--verbose".blue(),
-        "(-v)".yellow()
+        "--no-progress".bright_blue(),
+        "(-np)".yellow(),
+        "--verbose".bright_blue(),
+        "(-v)".yellow(),
     );
     println!("{}", init);
     std::process::exit(0);
@@ -61,23 +70,25 @@ Options:
 
 pub fn uninstall_help() {
     let install = format!(
-        r#"{}
+        r#"
+Novus Package Manager {}
     
-Install dependencies for a project.
+Uninstall a package or a list of packages
 
-Usage: {} {} {}
+Usage: {} {} {} {}
     
 Options: 
     
-  {} {} Accept all prompts while installing dependencies.  
+  {} {} Disables progress bar for installation.
   {} {} Output verbose messages on internal operations."#,
-        format!("volt {}", __VERSION__.bright_green().bold()),
-        "volt".bright_green().bold(),
-        "install".bright_purple(),
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "uninstall".bright_purple(),
+        "[package]".white(),
         "[flags]".white(),
-        "--yes".blue(),
-        "(-y)".yellow(),
-        "--verbose".blue(),
+        "--no-progress".bright_blue(),
+        "(-np)".yellow(),
+        "--verbose".bright_blue(),
         "(-v)".yellow()
     );
     println!("{}", install);
@@ -86,28 +97,26 @@ Options:
 
 pub fn update_help() {
     let add = format!(
-        r#"{}
+        r#"
+Novus Package Manager {}
 
-Add a package to your dependencies for your project.
+Updates a package or a list of packages
 
 Usage: {} {} {} {}
 
 Options: 
     
-  {} {} Output the version number.
-  {} {} Output verbose messages on internal operations.
-  {} {} Disable progress bar."#,
-        format!("volt {}", __VERSION__.bright_green().bold()),
-        "volt".bright_green().bold(),
+  {} {} Disables progress bar for installation.
+  {} {} Output verbose messages on internal operations."#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
         "add".bright_purple(),
         "[packages]".white(),
         "[flags]".white(),
-        "--version".blue(),
-        "(-ver)".yellow(),
-        "--verbose".blue(),
+        "--no-progress".bright_blue(),
+        "(-np)".yellow(),
+        "--verbose".bright_blue(),
         "(-v)".yellow(),
-        "--no-progress".blue(),
-        "(-np)".yellow()
     );
     println!("{}", add);
     std::process::exit(0);
@@ -115,25 +124,15 @@ Options:
 
 pub fn list_help() {
     let remove = format!(
-        r#"{}
+        r#"
+Novus Package Manager {}
 
-Removes a package from your direct dependencies.
+List all packages available.
 
-Usage: {} {} {} {}
-
-Options: 
-
-  {} {} Output the version number.
-  {} {} Output verbose messages on internal operations."#,
-        format!("volt {}", __VERSION__.bright_green().bold()),
-        "volt".bright_green().bold(),
-        "remove".bright_purple(),
-        "[packages]".white(),
-        "[flags]".white(),
-        "--version".blue(),
-        "(-ver)".yellow(),
-        "--verbose".blue(),
-        "(-v)".yellow()
+Usage: {} {}"#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "list".bright_purple(),
     );
     println!("{}", remove);
     std::process::exit(0);
@@ -153,7 +152,7 @@ Novus Package Manager {}
         "novus install --help".bright_green()
     );
     println!("{}", install_error);
-    std::process::exit(1);
+    std::process::exit(0);
 }
 
 pub fn uninstall_error() {
@@ -161,25 +160,34 @@ pub fn uninstall_error() {
         r#"
 Novus Package Manager {}
 
-{} Missing list of packages to install.
+{} Missing list of packages to uninstall.
       
 {} Use {} for more information about this command."#,
         __VERSION__.bright_green().bold(),
         "error".bright_red(),
         "info".bright_blue(),
-        "novus install --help".bright_green()
+        "novus uninstall --help".bright_green()
     );
     println!("{}", uninstall_error);
-    std::process::exit(1);
+    std::process::exit(0);
 }
 
 pub fn invalid_command(command: &str) {
     println!(
         "{} {}\n{} Use {} for the list of all the commands\n",
         "error".bright_red(),
-        format!("{} is not a valid command!", command.blue()),
+        format!("{} is not a valid command!", command.bright_blue()),
         "info".bright_blue(),
         "novus --help".bright_green()
     );
-    std::process::exit(1);
+    std::process::exit(0);
+}
+
+pub fn list_packages(packages: Vec<&str>) {    
+    println!("novus {} \n\nPackages:\n", __VERSION__.bright_green().bold());
+    for package in packages {
+        println!("  {}{}", " - ".bright_purple(), package.bright_blue())
+    }
+    println!("\nRun {} for more info about each command.", "novus [command] --help".bright_green());
+    std::process::exit(0);
 }
