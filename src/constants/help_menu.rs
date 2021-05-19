@@ -189,5 +189,6 @@ pub fn list_packages(packages: Vec<&str>) {
         println!("  {}{}", " - ".bright_purple(), package.bright_blue())
     }
     println!("\nRun {} for more info about each command.", "novus [command] --help".bright_green());
+    
     std::process::exit(0);
 }
