@@ -9,12 +9,12 @@ use cache::check_cache;
 use get_package::get_package;
 
 #[allow(unused)]
-pub fn updater(packages: Vec<String>) {
+pub async fn updater(packages: Vec<String>) {
   let mut handles = vec![];
   let mut sizes = vec![];
   let mut multi = false; 
   for pkg in packages.iter() { 
-      let package: Package = get_package(pkg.as_str());
+      let package: Package = get_package(pkg.as_str()).await;
       sizes.push(package.versions[&package.latest_version].size);
   }            
   let mut max_size = sizes[0];
@@ -31,7 +31,7 @@ pub fn updater(packages: Vec<String>) {
   for pkg in packages.iter() {  
       let mut max = true;       
       let pkg_clone = pkg.clone();   
-      let package: Package = get_package(pkg_clone.as_str());
+      let package: Package = get_package(pkg_clone.as_str()).await;
       let latest_version = package.latest_version;
       let display_name = package.display_name;
       let threads = package.threads;

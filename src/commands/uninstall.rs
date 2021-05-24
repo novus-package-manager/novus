@@ -14,12 +14,12 @@ mod handle_error;
 use get_package::{get_package};
 use handle_error::handle_error_and_exit;
 
-pub fn uninstaller(packages: Vec<String>) {
+pub async fn uninstaller(packages: Vec<String>) {
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
     for pkg in packages.iter() {
-        let package: Package = get_package(pkg.as_str());
+        let package: Package = get_package(pkg.as_str()).await;
         sizes.push(package.versions[&package.latest_version].size);
     }
     let mut max_size = sizes[0];
@@ -34,7 +34,7 @@ pub fn uninstaller(packages: Vec<String>) {
     }
     for pkg in packages.iter() {
         let pkg_clone = pkg.clone();
-        let package: Package = get_package(pkg_clone.as_str());
+        let package: Package = get_package(pkg_clone.as_str()).await;
         let display_name = package.display_name;
         let uswitch = package.uswitches.clone();
         if multi == false {

@@ -15,7 +15,8 @@ use clokwerk::{Scheduler, TimeUnits};
 // use std::time::Instant;
 
 #[allow(unused)]
-fn main() {
+#[tokio::main]
+async fn main() {
     let _ = ansi_term::enable_ansi_support();
 
     create_dirs();
@@ -38,7 +39,7 @@ fn main() {
 
     let (flags, packages) = get_arguments(&args);
 
-    data = get_package::get_packages();
+    data = get_package::get_packages().await;
 
     let val = data
         .as_str()
@@ -59,13 +60,13 @@ fn main() {
 
     match command.as_str() {
         "install" => {
-            installer(packages);
+            installer(packages).await;
         }
         "uninstall" => {
             uninstaller(packages);
         }
         "auto" => {
-            autoupdate::get_latest_version("brave");
+            autoupdate::get_latest_version("7-zip").await;
         }
         "list" => {
             constants::help_menu::list_packages(package_list);

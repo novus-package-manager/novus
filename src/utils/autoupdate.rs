@@ -1,37 +1,38 @@
 use crate::classes::package::{Package, VersionData};
 use crate::utils::{get_package::get_package, handle_error::handle_error_and_exit, checksum::get_checksum};
-use reqwest::blocking::get;
+use reqwest::get;
 use crate::commands::install::threadeddownload;
 
-pub fn get_latest_version(package_name: &str) {
-    let package: Package = get_package(package_name.clone());
+pub async fn get_latest_version(package_name: &str) {
+    let package: Package = get_package(package_name.clone()).await;
     let mut temp_package: Package = package.clone();
     let url = package.autoupdate.download_page;
     println!("url: {}", url);
-    let mut file_contents = String::new();
-    match get(url) {
-        Ok(response) => {
-            if response.status() == reqwest::StatusCode::OK {
-                match response.text() {
-                    Ok(text) => {
-                        file_contents = text;
-                    }
-                    Err(err) => eprintln!("Could Not Read Response JSON, {}", err),
-                }
-            } else {
-                println!("Failed To Send Request");
-                std::process::exit(1);
-            }
-        }
-        Err(err) => eprintln!("Failed To Send Request: {}", err),
-    }
+    let response = get(url).await.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    let file_contents = response.text().await.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    // match get(url) {
+    //     Ok(response) => {
+    //         if response.status() == reqwest::StatusCode::OK {
+    //             match response.text() {
+    //                 Ok(text) => {
+    //                     file_contents = text;
+    //                 }
+    //                 Err(err) => eprintln!("Could Not Read Response JSON, {}", err),
+    //             }
+    //         } else {
+    //             println!("Failed To Send Request");
+    //             std::process::exit(1);
+    //         }
+    //     }
+    //     Err(err) => eprintln!("Failed To Send Request: {}", err),
+    // }
 
-    // println!("cont: {}", file_contents);
+    println!("cont: {}", file_contents);
 
     let regex = regex::Regex::new(package.autoupdate.regex.as_str()).unwrap();
 
     let matches: Vec<&str> = regex.captures_iter(file_contents.as_str()).map(|c| c.get(0).unwrap().as_str()).collect();
-    // println!("years: {:?}", years);
+    println!("matches: {:?}", matches);
 
     // let matches: Vec<&str> = vec!["Release v1.24.85", "Release v1.24.84", "Release v1.24.83"];
     let mut versions_calc: Vec<String> = vec![];
@@ -69,22 +70,24 @@ pub fn get_latest_version(package_name: &str) {
         // let url = "https://www.7-zip.org/a/7z".to_string() + version.replace(".", "").as_str() + "-x64.exe";
         let url = package.autoupdate.download_url.replace("<version>", version);
         println!("url: {}", url);
-        let mut file_size: u64 = 0;
-        match get(url.clone()) {
-            Ok(response) => {
-                if response.status() == reqwest::StatusCode::OK {
-                    file_size = response.content_length().unwrap();
-                } else {
-                    println!("Failed To Send Request. Status code: {}", response.status());
-                    std::process::exit(1);
-                }
-            }
-            Err(err) => eprintln!("Failed To Send Request: {}", err),
-        }
+        // let mut file_size: u64 = 0;
+        let response = get(url.clone()).await.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let file_size = response.content_length().unwrap_or_else(|| handle_error_and_exit("Failed to get content length".to_string()));
+        // match get(url.clone()) {
+        //     Ok(response) => {
+        //         if response.status() == reqwest::StatusCode::OK {
+        //             file_size = response.content_length().unwrap();
+        //         } else {
+        //             println!("Failed To Send Request. Status code: {}", response.status());
+        //             std::process::exit(1);
+        //         }
+        //     }
+        //     Err(err) => eprintln!("Failed To Send Request: {}", err),
+        // }
 
         let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let loc = format!(r"{}\novus\{}_check.exe", temp, package_name);
-        threadeddownload(url.clone(), loc.clone(), package.threads, package_name.to_string(), "".to_string(), false, false);
+        threadeddownload(url.clone(), loc.clone(), package.threads, package_name.to_string(), "".to_string(), false, false).await;
         let hash = get_checksum(loc.clone());
 
         let _ = std::fs::remove_file(loc);

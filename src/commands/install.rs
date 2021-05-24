@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::utils::{checksum, handle_error, cache, get_package};
 use get_package::{get_package};
 use crate::classes::package::Package;
@@ -8,15 +9,16 @@ use handle_error::handle_error_and_exit;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::io::{BufReader, BufWriter, Write};
 use std::{fs::File, u64};
+use std::sync::atomic::{Ordering, AtomicBool};
 
 // use std::time::Instant;
 
-pub fn installer(packages: Vec<String>) {
+pub async fn installer(packages: Vec<String>) {
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
     for pkg in packages.iter() {
-        let package: Package = get_package(pkg.as_str());
+        let package: Package = get_package(pkg.as_str()).await;
         sizes.push(package.versions[&package.latest_version].size);
     }
     let mut max_size = sizes[0];
@@ -33,7 +35,7 @@ pub fn installer(packages: Vec<String>) {
     for pkg in packages.iter() {
         let mut max = true;
         let pkg_clone = pkg.clone();
-        let package: Package = get_package(pkg_clone.as_str());
+        let package: Package = get_package(pkg_clone.as_str()).await;
         let latest_version = package.latest_version;
         let display_name = package.display_name;
         let threads = package.threads;
@@ -47,25 +49,22 @@ pub fn installer(packages: Vec<String>) {
         let url = package.versions[&latest_version].url.clone();
         let checksum = package.versions[&latest_version].checksum.clone();        
         let iswitch = package.iswitches.clone();
-        let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:50", e.to_string())));
         let package_name = package.package_name;
         let loc = format!(r"{}\novus\{}@{}.exe", temp, package_name, latest_version);
         if package.versions[&latest_version].size != max_size {
             max = false;
         }
         let exists = check_cache(package_name.clone(), latest_version.clone());
-        handles.push(std::thread::spawn(move || {
+        handles.push(tokio::spawn(async move {
             if !exists {
-                threadeddownload(url, loc.clone(), threads, package_name, checksum, true, max);
+                threadeddownload(url, loc.clone(), threads, package_name, checksum, true, max).await;
             }
-            install(&iswitch, loc.clone(), display_name, multi);
+            install(&iswitch, loc.clone(), display_name, multi).await;
         }));
     }
-    for handle in handles {
-        handle
-            .join()
-            .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string()));
-    }
+
+    futures::future::join_all(handles).await;
     println!("{}", "Successfully installed packages".bright_magenta());
     println!("Completed in {:?}", start.elapsed());
 }
@@ -86,7 +85,6 @@ fn get_splits(i: u64, total_length: u64, threads: u64) -> (u64, u64) {
     (start, end)
 }
 
-#[tokio::main]
 pub async fn threadeddownload(
     url: String,
     output: String,
@@ -104,12 +102,12 @@ pub async fn threadeddownload(
     let total_length = res
         .content_length()
         .unwrap_or_else(|| handle_error_and_exit("An Unexpected Error Occured!".to_string()));
-    let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:106", e.to_string())));
 
     if max {
         let progress_bar = ProgressBar::new(total_length);
         progress_bar.set_style(ProgressStyle::default_bar()
-              .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue/magenta}] {bytes}/{total_bytes} ({eta})")
+              .template("[{elapsed_precise}] [{wide_bar:.cyan/blue/magenta}] {bytes}/{total_bytes} ({eta})")
               .progress_chars("=>-"));
 
         for index in 0..threads {
@@ -117,7 +115,7 @@ pub async fn threadeddownload(
             let (start, end) = get_splits(index + 1, total_length, threads);
             let pb = progress_bar.clone();
             let mut file = BufWriter::new(
-                File::create(loc).unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
+                File::create(loc).unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:119", e.to_string()))),
             );
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -127,12 +125,12 @@ pub async fn threadeddownload(
                     .header("range", format!("bytes={}-{}", start, end))
                     .send()
                     .await
-                    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+                    .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:129", e.to_string())));
 
                 while let Some(chunk) = response
                     .chunk()
                     .await
-                    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
+                    .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:134", e.to_string())))
                 {
                     pb.inc(chunk.len() as u64);
                     let _ = file.write(&*chunk);
@@ -148,7 +146,7 @@ pub async fn threadeddownload(
             let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let mut file = BufWriter::new(
-                File::create(loc).unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
+                File::create(loc).unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:150", e.to_string()))),
             );
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -158,11 +156,11 @@ pub async fn threadeddownload(
                     .header("range", format!("bytes={}-{}", start, end))
                     .send()
                     .await
-                    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+                    .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:160", e.to_string())));
                 while let Some(chunk) = response
                     .chunk()
                     .await
-                    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
+                    .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:164", e.to_string())))
                 {
                     let _ = file.write(&*chunk);
                 }
@@ -173,7 +171,7 @@ pub async fn threadeddownload(
     }
 
     let mut file =
-        File::create(output.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        File::create(output.clone()).unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:175", e.to_string())));
 
     let temp = std::env::var("TEMP").unwrap();
 
@@ -181,54 +179,62 @@ pub async fn threadeddownload(
         let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file =
-            File::open(loc.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            File::open(loc.clone()).unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:183", e.to_string())));
         let mut reader = BufReader::new(downloaded_file);
         let _ = std::io::copy(&mut reader, &mut buf);
         let _ = file.write_all(&buf);        
         let _ = std::fs::remove_file(loc);
     }    
 
-    tokio::spawn(async move {
-        if get_checksum {
-            verify_checksum(output, checksum);
-        }
-    });
-
-    // delete_temp_cache(package_name, threads);
+    if get_checksum {
+        verify_checksum(output, checksum);
+    }
 
     // println!("download time: {:?}", start.elapsed());
 }
 
 #[allow(unused)]
-pub fn install(iswitch: &Vec<String>, output_file: String, display_name: String, multi: bool) {
-    let progress_bar = ProgressBar::new(9999999);
-    let pb = progress_bar.clone();
-    std::thread::spawn(move || {
-        let mut text = String::new();
-        if multi {
-            text = format!("{}", "Installing Packages".bright_cyan());
-        } else {
-            text = format!(
-                "{}{}",
-                "Installing ".bright_cyan(),
-                display_name.bright_cyan()
-            )
+pub async fn install(iswitch: &Vec<String>, output_file: String, display_name: String, multi: bool) {
+    let progress_bar = ProgressBar::new(0);
+    let completed = Arc::new(AtomicBool::new(false));
+    let completed_clone = completed.clone();
+
+    let mut text = String::new();
+    if multi {
+        text = format!("{}", "Installing Packages".bright_cyan());
+    } else {
+        text = format!(
+            "{}{}",
+            "Installing ".bright_cyan(),
+            display_name.bright_cyan()
+        )
+    }
+
+    let switch = iswitch.clone();
+
+    progress_bar.clone().set_style(
+        ProgressStyle::default_spinner()
+            .template(("{spinner:.green}".to_string() + format!(" {}", text).as_str()).as_str())
+            .tick_chars("┤┘┴└├┌┬┐ ")); 
+
+    let handle = tokio::spawn(async move {
+        while !completed_clone.load(Ordering::Relaxed) {
+            progress_bar.inc(5);
+            tokio::time::sleep(std::time::Duration::from_millis(100));
         }
-
-        progress_bar.clone().enable_steady_tick(150);
-
-        progress_bar.clone().set_style(
-            ProgressStyle::default_spinner()
-                .template(("{spinner:.green}".to_string() + format!(" {}", text).as_str()).as_str())
-                .tick_chars("┤┘┴└├┌┬┐ "));        
+        progress_bar.finish_and_clear();
     });
-    let _cmd = std::process::Command::new(output_file)
-        .arg(iswitch.join(" "))
-        .spawn()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
-        .wait_with_output()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
-    pb.finish_and_clear();
-    // process::exit(0);
+    let cmd = tokio::spawn(async move {
+        let _cmd = std::process::Command::new(output_file)
+        .arg(switch.join(" "))
+        .spawn()
+        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:227", e.to_string())))
+        .wait_with_output()
+        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:229", e.to_string())));
+    });
+
+    let _ = cmd.await;
+    completed.store(true, Ordering::Relaxed);
+    let _ = handle.await;
 }
