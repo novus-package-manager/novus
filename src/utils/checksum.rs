@@ -16,6 +16,7 @@ pub fn verify_checksum(output: String, checksum: String) {
     }
 }
 
+#[allow(unused)]
 pub fn get_checksum(output: String) -> String {
     let mut file = std::fs::File::open(output.clone()).unwrap();
     let mut hasher = Sha256::new();

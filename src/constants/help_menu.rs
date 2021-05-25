@@ -2,6 +2,7 @@ use colored::Colorize;
 
 const __VERSION__: &str = "v1.0.0";
 
+#[allow(unused)]
 pub fn about() {
     let about: String = format!(
         r#"
@@ -38,6 +39,7 @@ Run {} for more info about each command."#,
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn install_help() {
     let init = format!(
         r#"
@@ -68,6 +70,7 @@ Options:
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn uninstall_help() {
     let install = format!(
         r#"
@@ -95,6 +98,7 @@ Options:
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn update_help() {
     let add = format!(
         r#"
@@ -122,6 +126,7 @@ Options:
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn list_help() {
     let remove = format!(
         r#"
@@ -138,6 +143,7 @@ Usage: {} {}"#,
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn install_error() {
     let install_error = format!(
         r#"
@@ -155,6 +161,7 @@ Novus Package Manager {}
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn uninstall_error() {
     let uninstall_error = format!(
         r#"
@@ -172,6 +179,7 @@ Novus Package Manager {}
     std::process::exit(0);
 }
 
+#[allow(unused)]
 pub fn invalid_command(command: &str) {
     println!(
         "{} {}\n{} Use {} for the list of all the commands\n",

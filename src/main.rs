@@ -3,7 +3,8 @@ mod classes;
 mod utils;
 mod constants;
 use commands::{install, uninstall};
-use utils::{handle_error, get_package, handle_args, display_help, autoupdate};
+
+use utils::{handle_error, get_package, handle_args, display_help};
 use colored::Colorize;
 use display_help::display_help;
 use handle_args::{get_arguments, verify_args};
@@ -11,7 +12,6 @@ use handle_error::handle_error_and_exit;
 use install::installer;
 use serde_json::Value;
 use uninstall::uninstaller;
-use clokwerk::{Scheduler, TimeUnits};
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -20,9 +20,6 @@ async fn main() {
     let _ = ansi_term::enable_ansi_support();
 
     create_dirs();
-
-    let mut scheduler = Scheduler::new();
-    scheduler.every(5.seconds()).run(|| println!("Periodic task"));
 
     ctrlc::set_handler(move || {
         println!("\n{}", "Aborted!".bright_blue());
@@ -64,9 +61,6 @@ async fn main() {
         }
         "uninstall" => {
             uninstaller(packages);
-        }
-        "auto" => {
-            autoupdate::get_latest_version("7-zip").await;
         }
         "list" => {
             constants::help_menu::list_packages(package_list);

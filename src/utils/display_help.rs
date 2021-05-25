@@ -18,7 +18,6 @@ pub fn display_help(args: &Vec<String>) -> &String {
           "uninstall" => uninstall_error(),
           "update" => {},
           "list" => {},
-          "auto" => {},
           "--help" => about(),
           &_ => invalid_command(command)
       }        
@@ -33,7 +32,6 @@ pub fn display_help(args: &Vec<String>) -> &String {
                   "uninstall" => uninstall_help(),
                   "update" => update_help(),
                   "list" => list_help(),
-                  "auto" => {},
                   &_ => invalid_command(command)
               }        
           }
