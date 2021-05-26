@@ -623,6 +623,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "tokio",
+ "winapi",
  "winreg 0.9.0",
 ]
 
