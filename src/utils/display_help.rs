@@ -19,6 +19,8 @@ pub fn display_help(args: &Vec<String>) -> &String {
           "update" => {},
           "list" => {},
           "--help" => about(),
+          "-h" => about(),
+          "-?" => about(),
           &_ => invalid_command(command)
       }        
   }
@@ -26,7 +28,7 @@ pub fn display_help(args: &Vec<String>) -> &String {
       let command: &str = args[1].as_str();
       if args[2].as_str().starts_with("--") {
           let flag: &str = args[2].as_str();      
-          if flag == "--help" {
+          if flag == "--help" || flag == "-?" || flag == "-h" {
               match command {
                   "install" => install_help(),
                   "uninstall" => uninstall_help(),

@@ -1,14 +1,10 @@
-#[path = "../constants/commands.rs"]
-mod commands;
-
-use colored::Colorize;
-use difflib::get_close_matches;
-
-use std::{io::prelude::*, process};
-
-use commands::{
+use crate::constants::commands::{
     INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags,
 };
+use crate::constants::help_menu::{install_error, uninstall_error};
+use colored::Colorize;
+use difflib::get_close_matches;
+use std::{io::prelude::*, process};
 
 pub fn verify_args(
     flags: Vec<String>,
@@ -18,6 +14,15 @@ pub fn verify_args(
 ) -> (Vec<String>, Vec<String>) {
     let mut new_flags: Vec<String> = vec![];
     let mut new_packages: Vec<String> = vec![];
+
+    if packages.len() == 0 {
+        if command == "install" {
+            install_error();
+        }
+        if command == "uninstall" {
+            uninstall_error();
+        }
+    }
 
     for pkg in packages.iter() {
         let revised_package = get_close_matches(pkg, package_list.clone(), 1, 0.6);
@@ -54,22 +59,28 @@ pub fn verify_args(
     match command.as_str() {
         "install" => {
             for flag in flags.iter() {
-                if install_flags.contains(&flag.as_str()) {
-                    new_flags.push(flag.clone());
+                for install_flag in install_flags.iter() {
+                    if install_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
                 }
             }
         }
         "uninstall" => {
             for flag in flags.iter() {
-                if uninstall_flags.contains(&flag.as_str()) {
-                    new_flags.push(flag.clone());
+                for uninstall_flag in uninstall_flags.iter() {
+                    if uninstall_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
                 }
             }
         }
         "list" => {
             for flag in flags.iter() {
-                if list_flags.contains(&flag.as_str()) {
-                    new_flags.push(flag.clone());
+                for list_flag in list_flags.iter() {
+                    if list_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
                 }
             }
         }
@@ -90,7 +101,7 @@ pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
             || command == "update"
             || command == "list"
         {
-            if args[arg].starts_with("--") {
+            if args[arg].starts_with("-") {
                 flags.push(args[arg].clone());
             } else {
                 packages.push(args[arg].clone().to_lowercase());

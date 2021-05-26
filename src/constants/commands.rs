@@ -14,42 +14,28 @@ pub const COMMANDS: [&str; 11] = [
 ];
 
 #[allow(unused)]
-pub const INSTALL_FLAGS: [&str; 17] = [
-  "--verbose",
-  "--debug",
-  "--no-progress",
-  "--no-color",
-  "--log-output",
-  "--install-dir",
-  "--virus-check",
-  "--yes",
-  "--silent",
-  "--vscode",
-  "--python",
-  "--node",
-  "--sync",
-  "--reduce",
-  "--rate-limit",
-  "--portable",
-  "--manifest"
+pub const INSTALL_FLAGS: [[&str; 2]; 8] = [
+  ["--verbose", "-v"],
+  ["--debug", "-d"],
+  ["--no-progress", "-np"],
+  ["--no-color", "-nc"],
+  ["--log-output", "-lo"],  
+  ["--virus-check", "-vc"],
+  ["--yes", "-y"],
+  ["--silent", "-s"]   
 ];
 
 #[allow(unused)]
-pub const UNINSTALL_FLAGS: [&str; 12] = [
-  "--verbose",
-  "--debug",
-  "--no-color",
-  "--log-output",
-  "--yes",
-  "--silent",
-  "--vscode",
-  "--python",
-  "--node",
-  "--no-cache",
-  "--portable",
-  "--manifest"
+pub const UNINSTALL_FLAGS: [[&str; 2]; 7] = [
+  ["--verbose", "-v"],
+  ["--debug", "-d"],
+  ["--no-color", "-nc"],
+  ["--log-output", "-lg"],
+  ["--yes", "-y"],
+  ["--silent", "-s"],
+  ["--no-cache", "--no-cache"],    
 ];
 
 #[allow(unused)]
-pub const LIST_FLAGS: [&str; 2] = ["--installed", "--versions"];
+pub const LIST_FLAGS: [[&str; 2]; 2] = [["--installed", "-i"], ["--versions", "-v"]];
 

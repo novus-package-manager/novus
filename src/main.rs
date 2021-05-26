@@ -1,17 +1,17 @@
-mod commands;
 mod classes;
-mod utils;
+mod commands;
 mod constants;
-use commands::{install, uninstall};
+mod utils;
 
-use utils::{handle_error, get_package, handle_args, display_help};
 use colored::Colorize;
+use commands::{install, uninstall};
 use display_help::display_help;
 use handle_args::{get_arguments, verify_args};
 use handle_error::handle_error_and_exit;
 use install::installer;
 use serde_json::Value;
 use uninstall::uninstaller;
+use utils::{display_help, get_package, handle_args, handle_error};
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -53,11 +53,11 @@ async fn main() {
         })
         .collect();
 
-    let (flags, packages) = verify_args(flags, packages, command, package_list.clone());    
+    let (flags, packages) = verify_args(flags, packages, command, package_list.clone());
 
     match command.as_str() {
         "install" => {
-            installer(packages).await;
+            installer(packages, flags).await;
         }
         "uninstall" => {
             uninstaller(packages);

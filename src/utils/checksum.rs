@@ -1,8 +1,8 @@
-use sha2::{Sha256, Digest};
-use colored::Colorize;
 use crate::handle_error::handle_error_and_exit;
+use colored::Colorize;
+use sha2::{Digest, Sha256};
 
-pub fn verify_checksum(output: String, checksum: String) {
+pub fn verify_checksum(output: String, checksum: String, no_color: bool) {
     let mut file = std::fs::File::open(output.clone()).unwrap();
     let mut hasher = Sha256::new();
     std::io::copy(&mut file, &mut hasher).unwrap();
@@ -10,7 +10,11 @@ pub fn verify_checksum(output: String, checksum: String) {
 
     if hash.to_uppercase() == checksum.to_uppercase() {
         // Verified Checksum
-        println!("{}", "Successfully Verified Hash".bright_green());
+        if no_color {
+            println!("Successfully Verified Hash");
+        } else {
+            println!("{}", "Successfully Verified Hash".bright_green());
+        }
     } else {
         handle_error_and_exit("Failed To Verify Hash".to_string());
     }
