@@ -338,7 +338,7 @@ pub async fn install(
     let cmd = tokio::spawn(async move {
         if file_type == ".exe" {
             let _cmd = std::process::Command::new(output_file.clone())
-                .arg(switch.join(" "))
+                .args(switch)
                 .spawn()
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:227", e.to_string()))

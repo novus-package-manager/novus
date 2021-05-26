@@ -191,12 +191,18 @@ pub fn invalid_command(command: &str) {
     std::process::exit(0);
 }
 
-pub fn list_packages(packages: Vec<&str>) {    
-    println!("novus {} \n\nPackages:\n", __VERSION__.bright_green().bold());
+#[allow(unused)]
+pub fn list_packages(packages: Vec<&str>) {
+    println!(
+        "novus {} \n\nPackages:\n",
+        __VERSION__.bright_green().bold()
+    );
     for package in packages {
         println!("  {}{}", " - ".bright_purple(), package.bright_blue())
     }
-    println!("\nRun {} for more info about each command.", "novus [command] --help".bright_green());
-    
+    println!(
+        "\nRun {} for more info about each command.",
+        "novus [command] --help".bright_green()
+    );
     std::process::exit(0);
 }
