@@ -1,3 +1,5 @@
+#![cfg(windows)]
+
 mod classes;
 mod commands;
 mod constants;
@@ -6,6 +8,7 @@ mod utils;
 use colored::Colorize;
 use commands::{install, uninstall};
 use display_help::display_help;
+
 use handle_args::{get_arguments, verify_args};
 use handle_error::handle_error_and_exit;
 use install::installer;
@@ -17,7 +20,6 @@ use utils::{display_help, get_package, handle_args, handle_error};
 #[allow(unused)]
 #[tokio::main]
 async fn main() {
-    #[cfg(windows)]
     enable_ansi_support().unwrap();
 
     create_dirs();
@@ -70,7 +72,6 @@ async fn main() {
     }
 }
 
-#[cfg(windows)]
 fn enable_ansi_support() -> Result<(), u32> {
     // ref: https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences#EXAMPLE_OF_ENABLING_VIRTUAL_TERMINAL_PROCESSING @@ https://archive.is/L7wRJ#76%
 

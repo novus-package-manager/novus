@@ -50,7 +50,6 @@ pub async fn uninstaller(packages: Vec<String>) {
 
 #[allow(unused_assignments)]
 pub fn uninstall(display_name: String, uswitches: Vec<String>) {
-    #[cfg(windows)]
     let mut uninstall_string = get_unins_string(display_name.clone());
 
     uninstall_string = uninstall_string.clone();
@@ -109,7 +108,6 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>) {
     pb.finish_and_clear();
 }
 
-#[cfg(windows)]
 pub fn get_unins_string(display_name: String) -> String {
     use winreg::enums::*;
     use winreg::RegKey;
