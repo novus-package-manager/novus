@@ -39,7 +39,10 @@ pub async fn updater(packages: Vec<String>) {
     let iswitch = package.iswitches.clone();
     let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
     let package_name = package.package_name;
-    let loc = format!(r"{}\novus\{}@{}.exe", temp, package_name, latest_version);
+    let loc = format!(
+      r"{}\novus\{}@{}{}",
+      temp, package_name, latest_version, file_type
+    );
     if package.versions[&latest_version].size != max_size {
       max = false;
     }

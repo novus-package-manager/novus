@@ -1,11 +1,13 @@
+use crate::classes::package::Package;
+use crate::utils::get_package;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::vec;
-extern crate winreg;
-use crate::classes::package::Package;
-use crate::utils::get_package;
 use winreg::enums::*;
 use winreg::RegKey;
+
+#[cfg(windows)]
+extern crate winreg;
 
 #[path = "../utils/handle_error.rs"]
 mod handle_error;
