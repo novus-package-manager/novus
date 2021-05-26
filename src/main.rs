@@ -16,6 +16,7 @@ use utils::{display_help, get_package, handle_args, handle_error};
 
 #[allow(unused)]
 #[tokio::main]
+#[cfg(windows)]
 async fn main() {
     let _ = ansi_term::enable_ansi_support();
 
