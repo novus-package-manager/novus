@@ -11,7 +11,7 @@ pub struct Package {
   pub iswitches: Vec<String>,
   pub uswitches: Vec<String>,
   pub autoupdate: AutoUpdateData,
-  #[serde(flatten)]  
+  #[serde(flatten)]
   pub versions: HashMap<String, VersionData>,
 }
 
@@ -27,4 +27,5 @@ pub struct VersionData {
   pub url: String,
   pub size: u64,
   pub checksum: String,
+  pub file_type: String,
 }

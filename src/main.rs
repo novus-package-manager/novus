@@ -60,7 +60,7 @@ async fn main() {
             installer(packages, flags).await;
         }
         "uninstall" => {
-            uninstaller(packages);
+            uninstaller(packages).await;
         }
         "list" => {
             constants::help_menu::list_packages(package_list);

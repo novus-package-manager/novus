@@ -63,15 +63,23 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         }
         let url = package.versions[&latest_version].url.clone();
         let checksum = package.versions[&latest_version].checksum.clone();
+        let file_type = package.versions[&latest_version].file_type.clone();
         let iswitch = package.iswitches.clone();
         let temp = std::env::var("TEMP")
             .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:50", e.to_string())));
         let package_name = package.package_name;
-        let loc = format!(r"{}\novus\{}@{}.exe", temp, package_name, latest_version);
+        let loc = format!(
+            r"{}\novus\{}@{}{}",
+            temp, package_name, latest_version, file_type
+        );
         if package.versions[&latest_version].size != max_size {
             max = false;
         }
-        let exists = check_cache(package_name.clone(), latest_version.clone());
+        let exists = check_cache(
+            package_name.clone(),
+            latest_version.clone(),
+            file_type.clone(),
+        );
         if no_progress {
             max = false
         }
@@ -89,7 +97,15 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                 )
                 .await;
             }
-            install(&iswitch, loc.clone(), display_name, multi, no_color).await;
+            install(
+                &iswitch,
+                loc.clone(),
+                display_name,
+                multi,
+                no_color,
+                file_type,
+            )
+            .await;
         }));
     }
 
@@ -128,7 +144,6 @@ pub async fn threadeddownload(
     max: bool,
     no_color: bool,
 ) {
-    println!("url: {}", url);
     // let start = Instant::now();
     let mut handles = vec![];
     let res = reqwest::get(url.to_string())
@@ -246,6 +261,7 @@ pub async fn install(
     display_name: String,
     multi: bool,
     no_color: bool,
+    file_type: String,
 ) {
     let progress_bar = ProgressBar::new(0);
     let completed = Arc::new(AtomicBool::new(false));
@@ -295,12 +311,30 @@ pub async fn install(
     });
 
     let cmd = tokio::spawn(async move {
-        let _cmd = std::process::Command::new(output_file)
-            .arg(switch.join(" "))
-            .spawn()
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:227", e.to_string())))
-            .wait_with_output()
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:229", e.to_string())));
+        if file_type == ".exe" {
+            let _cmd = std::process::Command::new(output_file.clone())
+                .arg(switch.join(" "))
+                .spawn()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                })
+                .wait_with_output()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
+                });
+        }
+        if file_type == ".msi" {
+            let _cmd = std::process::Command::new("MsiExec")
+                .args(&["/i", output_file.clone().as_str(), "/passive"])
+                .spawn()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                })
+                .wait_with_output()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
+                });
+        }
     });
 
     let _ = cmd.await;

@@ -1,17 +1,16 @@
-
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::vec;
 extern crate winreg;
-use winreg::enums::*;
-use winreg::RegKey;
 use crate::classes::package::Package;
 use crate::utils::get_package;
+use winreg::enums::*;
+use winreg::RegKey;
 
 #[path = "../utils/handle_error.rs"]
 mod handle_error;
 
-use get_package::{get_package};
+use get_package::get_package;
 use handle_error::handle_error_and_exit;
 
 pub async fn uninstaller(packages: Vec<String>) {
