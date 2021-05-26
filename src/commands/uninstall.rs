@@ -116,6 +116,7 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>) {
     pb.finish_and_clear();
 }
 
+#[cfg(windows)]
 pub fn get_unins_string(display_name: String) -> String {
     // println!("display_name: {}", display_name);
     let mut regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
