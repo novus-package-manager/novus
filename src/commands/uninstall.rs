@@ -50,7 +50,9 @@ pub async fn uninstaller(packages: Vec<String>) {
 
 #[allow(unused_assignments)]
 pub fn uninstall(display_name: String, uswitches: Vec<String>) {
+    #[cfg(windows)]
     let mut uninstall_string = get_unins_string(display_name.clone());
+
     uninstall_string = uninstall_string.clone();
     let split: Vec<&str> = uninstall_string.split(".exe").collect();
     let mut args: Vec<&str> = vec![];

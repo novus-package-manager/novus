@@ -17,6 +17,7 @@ use utils::{display_help, get_package, handle_args, handle_error};
 #[allow(unused)]
 #[tokio::main]
 async fn main() {
+    #[cfg(windows)]
     enable_ansi_support().unwrap();
 
     create_dirs();
