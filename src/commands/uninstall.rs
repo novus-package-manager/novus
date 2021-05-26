@@ -1,19 +1,10 @@
 use crate::classes::package::Package;
 use crate::utils::get_package;
+use crate::utils::handle_error::handle_error_and_exit;
 use colored::Colorize;
+use get_package::get_package;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::vec;
-
-#[cfg(windows)]
-extern crate winreg;
-use winreg::enums::*;
-use winreg::RegKey;
-
-#[path = "../utils/handle_error.rs"]
-mod handle_error;
-
-use get_package::get_package;
-use handle_error::handle_error_and_exit;
 
 pub async fn uninstaller(packages: Vec<String>) {
     let mut handles = vec![];
@@ -118,6 +109,8 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>) {
 
 #[cfg(windows)]
 pub fn get_unins_string(display_name: String) -> String {
+    use winreg::enums::*;
+    use winreg::RegKey;
     // println!("display_name: {}", display_name);
     let mut regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
     let mut uninstall_string: String = "NULL".to_string();
