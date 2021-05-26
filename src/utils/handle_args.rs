@@ -25,13 +25,20 @@ pub fn verify_args(
     }
 
     for pkg in packages.iter() {
-        let revised_package = get_close_matches(pkg, package_list.clone(), 1, 0.6);
-        if package_list.contains(&pkg.as_str()) {
-            new_packages.push(pkg.clone());
+        let mut pkg_name = pkg.as_str();
+        let mut version = "0";
+        if pkg.contains("@") {
+            let pkg_split: Vec<&str> = pkg.split("@").collect();
+            pkg_name = pkg_split[0];
+            version = pkg_split[1];
+        };
+        let revised_package = get_close_matches(pkg_name, package_list.clone(), 1, 0.6);
+        if package_list.contains(&pkg_name) {
+            new_packages.push(pkg.to_string().clone());
         } else if revised_package.len() == 1 {
             print!(
                 "Could not find {} package. Install {} instead? (Y/N): ",
-                pkg.bright_magenta(),
+                pkg_name.bright_magenta(),
                 revised_package[0].bright_green()
             );
             std::io::stdout()
@@ -41,14 +48,15 @@ pub fn verify_args(
             let mut string: String = String::new();
             let _ = std::io::stdin().read_line(&mut string);
             if string.trim().to_lowercase() == "y" {
-                new_packages.push(revised_package[0].to_string());
+                let new_package = revised_package[0].to_string() + "@" + version;
+                new_packages.push(new_package.to_string());
             } else {
                 process::exit(0);
             }
         } else {
             println!(
                 "Package {} doesn't exist yet :(\n\n{} run {} to view all available packages.",
-                pkg.bright_magenta(),
+                pkg_name.bright_magenta(),
                 "info:".bright_blue(),
                 "novus list".bright_magenta()
             );

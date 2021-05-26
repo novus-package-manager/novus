@@ -25,7 +25,12 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     let mut sizes = vec![];
     let mut multi = false;
     for pkg in packages.iter() {
-        let package: Package = get_package(pkg.as_str()).await;
+        let pkg_split: Vec<&str> = pkg.split("@").collect();
+        let mut pkg_name = pkg.as_str();
+        if pkg_split.len() == 2 {
+            pkg_name = pkg_split[0];
+        }
+        let package: Package = get_package(pkg_name).await;
         sizes.push(package.versions[&package.latest_version].size);
     }
     let mut max_size = sizes[0];
@@ -45,9 +50,19 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     let start = std::time::Instant::now();
     for pkg in packages.iter() {
         let mut max = true;
-        let pkg_clone = pkg.clone();
-        let package: Package = get_package(pkg_clone.as_str()).await;
+        let pkg_split: Vec<&str> = pkg.split("@").collect();
+        let mut pkg_name = pkg.as_str();
+        let mut desired_version = "0";
+        if pkg_split.len() == 2 {
+            pkg_name = pkg_split[0];
+            desired_version = pkg_split[1];
+        }
+        let pkg_clone = pkg_name.clone();
+        let package: Package = get_package(pkg_clone).await;
         let latest_version = package.latest_version;
+        if desired_version == "0" {
+            desired_version = latest_version.as_str();
+        }
         let display_name = package.display_name;
         let threads = package.threads;
         if multi == false {
@@ -61,23 +76,33 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                 );
             }
         }
-        let url = package.versions[&latest_version].url.clone();
-        let checksum = package.versions[&latest_version].checksum.clone();
-        let file_type = package.versions[&latest_version].file_type.clone();
+        package
+            .versions
+            .get(&desired_version.to_string())
+            .unwrap_or_else(|| {
+                handle_error_and_exit("That version does not exist yet".to_string())
+            });
+        let url = package.versions[&desired_version.to_string()].url.clone();
+        let checksum = package.versions[&desired_version.to_string()]
+            .checksum
+            .clone();
+        let file_type = package.versions[&desired_version.to_string()]
+            .file_type
+            .clone();
         let iswitch = package.iswitches.clone();
         let temp = std::env::var("TEMP")
             .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:50", e.to_string())));
         let package_name = package.package_name;
         let loc = format!(
             r"{}\novus\{}@{}{}",
-            temp, package_name, latest_version, file_type
+            temp, package_name, desired_version, file_type
         );
-        if package.versions[&latest_version].size != max_size {
+        if package.versions[&desired_version.to_string()].size != max_size {
             max = false;
         }
         let exists = check_cache(
             package_name.clone(),
-            latest_version.clone(),
+            desired_version.to_string().clone(),
             file_type.clone(),
         );
         if no_progress {
