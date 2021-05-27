@@ -26,7 +26,7 @@ pub async fn get_package(package_name: &str) -> Package {
 pub async fn get_packages() -> String {
     let mut file_contents = String::new();
     let response = get(format!(
-        "https://storage.googleapis.com/novus_bucket/package-list.json?a={:?}",
+        "https://storage.googleapis.com/novus_bucket/package-list/package-list.json?a={:?}",
         std::time::UNIX_EPOCH.elapsed().unwrap()
     ))
     .await

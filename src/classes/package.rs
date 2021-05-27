@@ -6,7 +6,6 @@ pub struct Package {
   pub package_name: String,
   pub display_name: String,
   pub latest_version: String,
-  pub home_page: String,
   pub threads: u64,
   pub iswitches: Vec<String>,
   pub uswitches: Vec<String>,

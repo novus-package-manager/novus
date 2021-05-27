@@ -1,7 +1,7 @@
 #[path = "../constants/help_menu.rs"]
 mod help_menu;
 
-use help_menu::{ about, install_help, uninstall_help, update_help, list_help, install_error, uninstall_error, invalid_command };
+use help_menu::{ about, install_help, uninstall_help, update_help, list_help, install_error, uninstall_error, invalid_command, clean_help };
 use colored::Colorize;
 
 const __VERSION__: &str = "v1.0.0";
@@ -18,6 +18,7 @@ pub fn display_help(args: &Vec<String>) -> &String {
           "uninstall" => uninstall_error(),
           "update" => {},
           "list" => {},
+          "clean" => {},
           "--help" => about(),
           "-h" => about(),
           "-?" => about(),
@@ -34,6 +35,7 @@ pub fn display_help(args: &Vec<String>) -> &String {
                   "uninstall" => uninstall_help(),
                   "update" => update_help(),
                   "list" => list_help(),
+                  "clean" => clean_help(),
                   &_ => invalid_command(command)
               }        
           }

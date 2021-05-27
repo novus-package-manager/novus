@@ -6,9 +6,10 @@ mod constants;
 mod utils;
 
 use colored::Colorize;
-use commands::{install, uninstall};
+use commands::{install, uninstall, clean};
 use display_help::display_help;
 
+use clean::clean;
 use handle_args::{get_arguments, verify_args};
 use handle_error::handle_error_and_exit;
 use install::installer;
@@ -67,6 +68,9 @@ async fn main() {
         }
         "list" => {
             constants::help_menu::list_packages(package_list);
+        },
+        "clean" => {
+            clean(args);
         }
         &_ => {}
     }

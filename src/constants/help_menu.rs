@@ -144,6 +144,23 @@ Usage: {} {}"#,
 }
 
 #[allow(unused)]
+pub fn clean_help() {
+    let clean = format!(
+        r#"
+Novus Package Manager {}
+
+Clears novus cache
+
+Usage: {} {} [packages] [flags]"#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "clean".bright_purple(),
+    );
+    println!("{}", clean);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
 pub fn install_error() {
     let install_error = format!(
         r#"

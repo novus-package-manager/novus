@@ -111,17 +111,36 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         handles.push(tokio::spawn(async move {
             if !exists {
                 threadeddownload(
-                    url,
+                    url.clone(),
                     loc.clone(),
                     threads,
-                    package_name,
-                    checksum,
+                    package_name.clone(),
+                    checksum.clone(),
+                    true,
+                    max,
+                    no_color,
+                )
+                .await;                
+            }          
+            if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                println!("{}", "Clearing Cache and Retrying".bright_blue());
+                crate::utils::cache::clear_cache_for_package(&package_name);
+                threadeddownload(
+                    url.clone(),
+                    loc.clone(),
+                    threads,
+                    package_name.clone(),
+                    checksum.clone(),
                     true,
                     max,
                     no_color,
                 )
                 .await;
-            }
+                if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                    println!("{} {}", "Failed to Install".bright_red(), display_name.bright_red());
+                    std::process::exit(1);
+                }     
+            }         
             install(
                 &iswitch,
                 loc.clone(),
@@ -270,10 +289,6 @@ pub async fn threadeddownload(
         let _ = std::io::copy(&mut reader, &mut buf);
         let _ = file.write_all(&buf);
         let _ = std::fs::remove_file(loc);
-    }
-
-    if get_checksum {
-        verify_checksum(output, checksum, no_color);
     }
 
     // println!("download time: {:?}", start.elapsed());
