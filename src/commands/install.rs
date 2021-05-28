@@ -115,8 +115,6 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                     loc.clone(),
                     threads,
                     package_name.clone(),
-                    checksum.clone(),
-                    true,
                     max,
                     no_color,
                 )
@@ -130,8 +128,6 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                     loc.clone(),
                     threads,
                     package_name.clone(),
-                    checksum.clone(),
-                    true,
                     max,
                     no_color,
                 )
@@ -183,8 +179,6 @@ pub async fn threadeddownload(
     output: String,
     threads: u64,
     package_name: String,
-    checksum: String,
-    get_checksum: bool,
     max: bool,
     no_color: bool,
 ) {

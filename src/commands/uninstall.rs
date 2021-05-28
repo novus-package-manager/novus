@@ -175,6 +175,28 @@ pub fn get_unins_string(display_name: String) -> String {
         }
     }
 
+    if uninstall_string == "NULL".to_string() {
+        let path: RegKey = regkey.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        for name in path
+            .enum_keys()
+            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
+        {
+            let unins_path: RegKey = regkey.open_subkey(format!("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}", name)).unwrap_or(regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string())));
+            let app_name: String = unins_path
+                .get_value("DisplayName")
+                .unwrap_or("NULL".to_string());
+            // println!("app name 3: {}", app_name);
+            if app_name
+                .to_lowercase()
+                .starts_with(display_name.to_lowercase().as_str())
+            {
+                uninstall_string = unins_path
+                    .get_value("UninstallString")
+                    .unwrap_or("NO_STRING".to_string());
+            }
+        }
+    }
+
     if uninstall_string == "NULL" {
         handle_error_and_exit(format!("Failed to uninstall {}", display_name));
     }
