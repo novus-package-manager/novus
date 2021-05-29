@@ -1,5 +1,5 @@
 use crate::constants::commands::{
-    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags, COMMANDS
+    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags, CLEAN_FLAGS as clean_flags, SEARCH_FLAGS as search_flags, COMMANDS
 };
 use crate::constants::help_menu::{install_error, uninstall_error};
 use colored::Colorize;
@@ -87,6 +87,24 @@ pub fn verify_args(
             for flag in flags.iter() {
                 for list_flag in list_flags.iter() {
                     if list_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
+        "clean" => {
+            for flag in flags.iter() {
+                for clean_flag in clean_flags.iter() {
+                    if clean_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
+        "search" => {
+            for flag in flags.iter() {
+                for search_flag in search_flags.iter() {
+                    if search_flag.contains(&flag.as_str()) {
                         new_flags.push(flag.clone());
                     }
                 }

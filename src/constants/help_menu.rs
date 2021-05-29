@@ -1,6 +1,5 @@
 use colored::Colorize;
-
-const __VERSION__: &str = "v1.0.0";
+use crate::constants::version::__VERSION__;
 
 #[allow(unused)]
 pub fn about() {

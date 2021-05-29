@@ -6,18 +6,19 @@ mod constants;
 mod utils;
 
 use colored::Colorize;
-use commands::{install, uninstall, clean, list};
+use commands::{clean, install, list, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
+use constants::commands::COMMANDS;
 use handle_args::{get_arguments, verify_args};
 use handle_error::handle_error_and_exit;
 use install::installer;
+use list::list;
+use search::search;
 use serde_json::Value;
 use uninstall::uninstaller;
 use utils::{display_help, get_package, handle_args, handle_error};
-use constants::commands::COMMANDS;
-use list::list;
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -67,7 +68,14 @@ async fn main() {
         }
     }
 
-    let (flags, packages) = verify_args(flags, packages, command, package_list.clone());
+    if command != "search" {
+        let (flags, packages) = verify_args(
+            flags.clone(),
+            packages.clone(),
+            command,
+            package_list.clone(),
+        );
+    };
 
     match command {
         "install" => {
@@ -80,13 +88,13 @@ async fn main() {
             installer(packages, flags).await;
         }
         "list" => {
-            list(package_list, flags);
-        },
+            list(package_list, flags).await;
+        }
         "clean" => {
             clean(args);
         }
         "search" => {
-            clean(args);
+            search(package_list, flags, &packages[0]).await;
         }
         &_ => {}
     }

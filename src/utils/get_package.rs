@@ -17,9 +17,7 @@ pub async fn get_package(package_name: &str) -> Package {
         .text()
         .await
         .unwrap_or_else(|e| handle_error_and_exit(format!("{} get_package.rs:36", e.to_string())));
-    from_str::<Package>(&file_contents).unwrap_or_else(|e| {
-        handle_error_and_exit("That package or version does not exist!".to_string())
-    })
+    from_str::<Package>(&file_contents).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
 }
 
 #[allow(unused)]
