@@ -14,24 +14,29 @@ Commands:
 
   {} {} {} Installs packages.
   {} {} {} Uninstalls packages.
-  {} {} Updates packages.
+  {} {} {} Updates packages.
   {} {} {} Lists all packages.
+  {} {} {} Searches for packages.  
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "[command]".white(),
         "*".bright_magenta().bold(),
-        "install".bright_blue(),
+        "install".bright_cyan(),
         "(i)".yellow(),
         "*".bright_magenta().bold(),
-        "uninstall".bright_blue(),
+        "uninstall".bright_cyan(),
         "(u)".yellow(),
         "*".bright_magenta().bold(),
-        "update".bright_blue(),
+        "update".bright_cyan(),
+        "(upgrade)".yellow(),
         "*".bright_magenta().bold(),
-        "list".bright_blue(),
-        "(search)".yellow(),
+        "list".bright_cyan(),
+        "(show)".yellow(),
+        "*".bright_magenta().bold(),
+        "search".bright_cyan(),
+        "(find)".yellow(),
         "novus [command] --help".bright_green(),
     );
 
@@ -59,11 +64,11 @@ Options:
         "install".bright_purple(),
         "[package]".white(),
         "[flags]".white(),
-        "--no-color".bright_blue(),
+        "--no-color".bright_cyan(),
         "(-nc)".yellow(),
-        "--no-progress".bright_blue(),
+        "--no-progress".bright_cyan(),
         "(-np)".yellow(),
-        "--verbose".bright_blue(),
+        "--verbose".bright_cyan(),
         "(-v)".yellow(),
     );
     println!("{}", init);
@@ -89,9 +94,9 @@ Options:
         "uninstall".bright_purple(),
         "[package]".white(),
         "[flags]".white(),
-        "--no-progress".bright_blue(),
+        "--no-progress".bright_cyan(),
         "(-np)".yellow(),
-        "--verbose".bright_blue(),
+        "--verbose".bright_cyan(),
         "(-v)".yellow()
     );
     println!("{}", install);
@@ -117,9 +122,9 @@ Options:
         "add".bright_purple(),
         "[packages]".white(),
         "[flags]".white(),
-        "--no-progress".bright_blue(),
+        "--no-progress".bright_cyan(),
         "(-np)".yellow(),
-        "--verbose".bright_blue(),
+        "--verbose".bright_cyan(),
         "(-v)".yellow(),
     );
     println!("{}", add);
@@ -134,10 +139,21 @@ Novus Package Manager {}
 
 List all packages available.
 
-Usage: {} {}"#,
+Usage: {} {}
+
+Options: 
+  {} {} Displays all packages available
+  {} {} Displays only installed packages
+  {} {} Displays only the package names"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "list".bright_purple(),
+        "--all".bright_cyan(),
+        "(-a)".yellow(),
+        "--installed".bright_cyan(),
+        "(-i)".yellow(),
+        "--names".bright_cyan(),
+        "(-n)".yellow(),
     );
     println!("{}", remove);
     std::process::exit(0);
@@ -222,22 +238,6 @@ pub fn invalid_command(command: &str) {
         format!("{} is not a valid command!", command.bright_blue()),
         "info".bright_blue(),
         "novus --help".bright_green()
-    );
-    std::process::exit(0);
-}
-
-#[allow(unused)]
-pub fn list_packages(packages: Vec<&str>) {
-    println!(
-        "novus {} \n\nPackages:\n",
-        __VERSION__.bright_green().bold()
-    );
-    for package in packages {
-        println!("  {}{}", " - ".bright_purple(), package.bright_blue())
-    }
-    println!(
-        "\nRun {} for more info about each command.",
-        "novus [command] --help".bright_green()
     );
     std::process::exit(0);
 }

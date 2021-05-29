@@ -38,7 +38,7 @@ pub const UNINSTALL_FLAGS: [[&str; 2]; 7] = [
 ];
 
 #[allow(unused)]
-pub const LIST_FLAGS: [[&str; 2]; 2] = [["--installed", "-i"], ["--versions", "-v"]];
+pub const LIST_FLAGS: [[&str; 2]; 4] = [["--installed", "-i"], ["--versions", "-v"], ["--names", "-n"], ["--all", "-a"]];
 
 #[allow(unused)]
 pub const CLEAN_FLAGS: [[&str; 2]; 2] = [["--yes", "-y"], ["--all", "a"]];

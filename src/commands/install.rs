@@ -10,11 +10,13 @@ use std::io::{BufReader, BufWriter, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{fs::File, u64};
+use crate::classes::installed_packages::Packages;
 // use std::time::Instant;
 
 pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     let mut no_progress = false;
     let mut no_color = false;
+    let mut packages_version: Vec<String> = vec![];
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
@@ -63,6 +65,8 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         if desired_version == "0" {
             desired_version = latest_version.as_str();
         }
+        let package_ver = pkg.to_string() + "@" + desired_version;
+        packages_version.push(package_ver);     
         let display_name = package.display_name;
         let threads = package.threads;
         if multi == false {
@@ -150,11 +154,32 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     }
 
     futures::future::join_all(handles).await;
+    let temp = std::env::var("TEMP").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let path = std::path::Path::new(loc.as_str());
+    if path.exists() {
+        let contents = std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let json: Packages = serde_json::from_str::<Packages>(contents.as_str()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let mut installed_packages = json.clone().packages;
+        installed_packages.append(&mut packages_version);
+        let installed_packages: Packages = Packages {
+            packages: installed_packages
+        };
+        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+    }
+    else {
+        let installed_packages: Packages = Packages {
+            packages: packages_version
+        };
+        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+    }
     if no_color {
         println!("Successfully installed packages");
     } else {
         println!("{}", "Successfully installed packages".bright_magenta());
-    }
+    }    
     println!("Completed in {:?}", start.elapsed());
 }
 

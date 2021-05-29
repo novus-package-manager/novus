@@ -5,6 +5,7 @@ use colored::Colorize;
 use get_package::get_package;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::vec;
+use crate::classes::installed_packages::Packages;
 
 pub async fn uninstaller(packages: Vec<String>) {
     let mut handles = vec![];
@@ -44,6 +45,27 @@ pub async fn uninstaller(packages: Vec<String>) {
         handle
             .join()
             .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string()));
+    }
+    let temp = std::env::var("TEMP").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let path = std::path::Path::new(loc.as_str());
+    if path.exists() {
+        let contents = std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let json: Packages = serde_json::from_str::<Packages>(contents.as_str()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let mut installed_packages = json.clone().packages;
+        for package in packages {
+            for installed_package in installed_packages.clone() {
+                if installed_package.starts_with(&package) {
+                    let index = installed_packages.iter().position(|x| *x == installed_package).unwrap();
+                    installed_packages.remove(index);                  
+                }
+            }
+        }
+        let installed_packages: Packages = Packages {
+            packages: installed_packages
+        };
+        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
     }
     println!("{}", "Successfully uninstalled packages".bright_magenta());
 }
