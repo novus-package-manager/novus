@@ -98,13 +98,25 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>) {
             std::thread::sleep(std::time::Duration::from_millis(100))
         }
     });
-    let _cmd = std::process::Command::new(uninstall_string)
+
+    if uninstall_string.starts_with("MsiExec.exe") {
+        let mut msi_args = args.clone();
+        msi_args.push("/passive");
+        let _cmd = std::process::Command::new(uninstall_string)
+        .args(msi_args)
+        .spawn()
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
+        .wait_with_output()
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    }
+    else {
+        let _cmd = std::process::Command::new(uninstall_string)
         .args(args)
         .spawn()
         .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
         .wait_with_output()
         .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-
+    }
     pb.finish_and_clear();
 }
 
@@ -170,7 +182,7 @@ pub fn get_unins_string(display_name: String) -> String {
             {
                 uninstall_string = unins_path
                     .get_value("UninstallString")
-                    .unwrap_or("NO_STRING".to_string());
+                    .unwrap_or("NULL".to_string());
             }
         }
     }
@@ -192,7 +204,7 @@ pub fn get_unins_string(display_name: String) -> String {
             {
                 uninstall_string = unins_path
                     .get_value("UninstallString")
-                    .unwrap_or("NO_STRING".to_string());
+                    .unwrap_or("NULL".to_string());
             }
         }
     }

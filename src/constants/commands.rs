@@ -1,16 +1,17 @@
 #[allow(unused)]
-pub const COMMANDS: [&str; 11] = [
-  "install",
-  "uninstall",
-  "update",
-  "bundle",
-  "search",
-  "new",
-  "config",
-  "sign",
-  "show",
-  "find",
-  "list",
+pub const COMMANDS: [[&str; 2]; 7]  = [
+  ["install", "i"],
+  ["uninstall", "u"],
+  ["update", "updgrade"],  
+  ["clean", "clear"],  
+  ["search", "find"],  
+  ["config", "config"],  
+  ["list", "show"],  
+];
+
+#[allow(unused)]
+pub const ALL_COMMANDS: [&str; 13] = [
+  "install", "i", "uninstall", "u", "update", "upgrade", "clean", "clear", "search", "find", "config", "list", "show"
 ];
 
 #[allow(unused)]
@@ -38,4 +39,7 @@ pub const UNINSTALL_FLAGS: [[&str; 2]; 7] = [
 
 #[allow(unused)]
 pub const LIST_FLAGS: [[&str; 2]; 2] = [["--installed", "-i"], ["--versions", "-v"]];
+
+#[allow(unused)]
+pub const CLEAN_FLAGS: [[&str; 2]; 2] = [["--yes", "-y"], ["--all", "a"]];
 

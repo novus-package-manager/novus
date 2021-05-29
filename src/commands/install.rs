@@ -357,7 +357,7 @@ pub async fn install(
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
         }
-        if file_type == ".msi" {
+        else if file_type == ".msi" {
             let _cmd = std::process::Command::new("MsiExec")
                 .args(&["/i", output_file.clone().as_str(), "/passive"])
                 .spawn()
@@ -368,6 +368,18 @@ pub async fn install(
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
+        }
+        else {
+            let _cmd = std::process::Command::new("powershell")
+            .arg(output_file.clone())
+            .spawn()
+            .unwrap_or_else(|e| {
+                handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+            })
+            .wait_with_output()
+            .unwrap_or_else(|e| {
+                handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
+            });
         }
     });
 

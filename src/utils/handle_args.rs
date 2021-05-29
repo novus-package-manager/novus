@@ -1,5 +1,5 @@
 use crate::constants::commands::{
-    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags,
+    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags, COMMANDS
 };
 use crate::constants::help_menu::{install_error, uninstall_error};
 use colored::Colorize;
@@ -9,11 +9,11 @@ use std::{io::prelude::*, process};
 pub fn verify_args(
     flags: Vec<String>,
     packages: Vec<String>,
-    command: &String,
+    command: &str,
     package_list: Vec<&str>,
 ) -> (Vec<String>, Vec<String>) {
     let mut new_flags: Vec<String> = vec![];
-    let mut new_packages: Vec<String> = vec![];
+    let mut new_packages: Vec<String> = vec![];    
 
     if packages.len() == 0 {
         if command == "install" {
@@ -64,7 +64,7 @@ pub fn verify_args(
         }
     }
 
-    match command.as_str() {
+    match command {
         "install" => {
             for flag in flags.iter() {
                 for install_flag in install_flags.iter() {
@@ -99,15 +99,22 @@ pub fn verify_args(
 }
 
 pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
-    let command: &str = &args[1];
+    let mut command: &str = &args[1];
     let mut flags: Vec<String> = vec![];
     let mut packages: Vec<String> = vec![];
+
+    for cmd in COMMANDS.iter() {
+        if command == cmd[1] {
+            command = cmd[0];
+        }
+    }
 
     for arg in 2..args.len() {
         if command == "install"
             || command == "uninstall"
             || command == "update"
             || command == "list"
+            || command == "search"
             || command == "clean"
         {
             if args[arg].starts_with("-") {

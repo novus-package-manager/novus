@@ -144,6 +144,24 @@ Usage: {} {}"#,
 }
 
 #[allow(unused)]
+pub fn search_help() {
+    let remove = format!(
+        r#"
+Novus Package Manager {}
+
+Searches for a package based on input.
+
+Usage: {} {} {}"#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "search".bright_purple(),
+        "7-zip".white(),
+    );
+    println!("{}", remove);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
 pub fn clean_help() {
     let clean = format!(
         r#"

@@ -16,6 +16,7 @@ use install::installer;
 use serde_json::Value;
 use uninstall::uninstaller;
 use utils::{display_help, get_package, handle_args, handle_error};
+use constants::commands::COMMANDS;
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -57,19 +58,33 @@ async fn main() {
         })
         .collect();
 
+    let mut command: &str = command;
+
+    for cmd in COMMANDS.iter() {
+        if command == cmd[1] {
+            command = cmd[0];
+        }
+    }
+
     let (flags, packages) = verify_args(flags, packages, command, package_list.clone());
 
-    match command.as_str() {
+    match command {
         "install" => {
             installer(packages, flags).await;
         }
         "uninstall" => {
             uninstaller(packages).await;
         }
+        "update" => {
+            installer(packages, flags).await;
+        }
         "list" => {
             constants::help_menu::list_packages(package_list);
         },
         "clean" => {
+            clean(args);
+        }
+        "search" => {
             clean(args);
         }
         &_ => {}

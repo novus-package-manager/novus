@@ -5,7 +5,7 @@ pub fn clean(args: Vec<String>) {
     let mut packages = vec![];
     let mut flags = vec![];
     for arg in args.clone() {
-        if arg.starts_with("-") || arg.starts_with("--") {
+        if arg.starts_with("-") {
             flags.push(arg);
         }
         else {
