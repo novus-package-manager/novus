@@ -35,7 +35,7 @@ pub fn verify_args(
         }
     }
 
-    if command != "search" && command != "quit" && command != "forcequit" {
+    if command != "search" {
         new_packages = vec![];
         new_flags = vec![];
         for pkg in packages.iter() {
@@ -51,8 +51,9 @@ pub fn verify_args(
                 new_packages.push(pkg.to_string().clone());
             } else if revised_package.len() == 1 {
                 print!(
-                    "Could not find {} package. Install {} instead? (Y/N): ",
+                    "Could not find {} package. {} {} instead? (Y/N): ",
                     pkg_name.bright_magenta(),
+                    command,
                     revised_package[0].bright_green()
                 );
                 std::io::stdout()

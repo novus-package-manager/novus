@@ -1,5 +1,6 @@
 use crate::classes::package::Package;
 use crate::utils::get_package::get_package;
+use crate::utils::handle_error::handle_error_and_exit;
 use colored::Colorize;
 use std::{io::prelude::*, process};
 
@@ -54,30 +55,60 @@ async fn forcequit_app(app: String) -> i32 {
     let package: Package = get_package(&app).await;
     let exec_name = package.exec_name;
     let executable = exec_name + ".exe";
-    let exit_code = process::Command::new("taskkill")
+    let output = process::Command::new("taskkill")
         .args(&["/im", &executable, "/f"])
-        .spawn()
-        .expect("Failed to terminate process")
-        .wait()
-        .expect("Failed to terminate process")
-        .code()
-        .expect("Failed to terminate process");
+        .output()
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
-    exit_code
+    let msg = std::str::from_utf8(&output.stderr).unwrap();
+    if msg.ends_with("not found.\r\n") {
+        println!(
+            "{}",
+            "Cannot terminate a proccess which is not running!".bright_purple()
+        );
+        process::exit(0);
+    }
+
+    0
 }
 
 async fn quit_app(app: String) -> i32 {
     let package: Package = get_package(&app).await;
     let exec_name = package.exec_name;
+    if exec_name == "none" {
+        println!(
+            "{} {}",
+            "Cannot terminate".bright_purple(),
+            app.bright_purple()
+        );
+        process::exit(0);
+    }
     let executable = exec_name + ".exe";
-    let exit_code = process::Command::new("taskkill")
+    let output = process::Command::new("taskkill")
         .args(&["/im", &executable])
-        .spawn()
-        .expect("Failed to terminate process")
-        .wait()
-        .expect("Failed to terminate process")
-        .code()
-        .expect("Failed to terminate process");
+        .output()
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
-    exit_code
+    let msg = std::str::from_utf8(&output.stderr).unwrap();
+    if msg.ends_with("not found.\r\n") {
+        println!(
+            "{}",
+            "Cannot terminate a proccess which is not running!".bright_purple()
+        );
+        process::exit(0);
+    }
+    if msg.ends_with("This process can only be terminated forcefully (with /F option).\r\n") {
+        println!(
+            "{} {} {} {} {} {}",
+            "Failed to terminate process.".bright_purple(),
+            "\n\nTry running with the",
+            "-f".bright_green(),
+            "flag or use",
+            "forcequit".bright_green(),
+            "instead"
+        );
+        process::exit(0);
+    }
+
+    0
 }
