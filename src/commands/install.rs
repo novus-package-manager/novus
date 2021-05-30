@@ -1,3 +1,4 @@
+use crate::classes::installed_packages::Packages;
 use crate::classes::package::Package;
 use crate::utils::{cache, checksum, get_package, handle_error};
 use cache::check_cache;
@@ -10,7 +11,6 @@ use std::io::{BufReader, BufWriter, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{fs::File, u64};
-use crate::classes::installed_packages::Packages;
 // use std::time::Instant;
 
 pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
@@ -66,7 +66,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
             desired_version = latest_version.as_str();
         }
         let package_ver = pkg.to_string() + "@" + desired_version;
-        packages_version.push(package_ver);     
+        packages_version.push(package_ver);
         let display_name = package.display_name;
         let threads = package.threads;
         if multi == false {
@@ -122,8 +122,8 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                     max,
                     no_color,
                 )
-                .await;                
-            }          
+                .await;
+            }
             if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
                 println!("{}", "Clearing Cache and Retrying".bright_blue());
                 crate::utils::cache::clear_cache_for_package(&package_name);
@@ -137,10 +137,14 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                 )
                 .await;
                 if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
-                    println!("{} {}", "Failed to Install".bright_red(), display_name.bright_red());
+                    println!(
+                        "{} {}",
+                        "Failed to Install".bright_red(),
+                        display_name.bright_red()
+                    );
                     std::process::exit(1);
-                }     
-            }         
+                }
+            }
             install(
                 &iswitch,
                 loc.clone(),
@@ -158,28 +162,31 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     let loc = format!(r"{}\novus\config\installed.json", temp);
     let path = std::path::Path::new(loc.as_str());
     if path.exists() {
-        let contents = std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let contents =
+            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let mut installed_packages = json.clone().packages;
         installed_packages.append(&mut packages_version);
         let installed_packages: Packages = Packages {
-            packages: installed_packages
+            packages: installed_packages,
         };
-        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let file =
+            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         serde_json::to_writer_pretty(file, &installed_packages).unwrap();
-    }
-    else {
+    } else {
         let installed_packages: Packages = Packages {
-            packages: packages_version
+            packages: packages_version,
         };
-        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let file =
+            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         serde_json::to_writer_pretty(file, &installed_packages).unwrap();
     }
     if no_color {
         println!("Successfully installed packages");
     } else {
         println!("{}", "Successfully installed packages".bright_magenta());
-    }    
+    }
     println!("Completed in {:?}", start.elapsed());
 }
 
@@ -381,8 +388,7 @@ pub async fn install(
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
-        }
-        else if file_type == ".msi" {
+        } else if file_type == ".msi" {
             let _cmd = std::process::Command::new("MsiExec")
                 .args(&["/i", output_file.clone().as_str(), "/passive"])
                 .spawn()
@@ -393,18 +399,17 @@ pub async fn install(
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
-        }
-        else {
+        } else {
             let _cmd = std::process::Command::new("powershell")
-            .arg(output_file.clone())
-            .spawn()
-            .unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
-            })
-            .wait_with_output()
-            .unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
-            });
+                .arg(output_file.clone())
+                .spawn()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                })
+                .wait_with_output()
+                .unwrap_or_else(|e| {
+                    handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
+                });
         }
     });
 

@@ -36,6 +36,8 @@ pub fn verify_args(
     }
 
     if command != "search" && command != "quit" && command != "forcequit" {
+        new_packages = vec![];
+        new_flags = vec![];
         for pkg in packages.iter() {
             let mut pkg_name = pkg.as_str();
             let mut version = "0";
@@ -148,7 +150,7 @@ pub fn verify_args(
 }
 
 pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
-    let mut command: &str = &args[1];
+    let command: &str = &args[1];
     let mut flags: Vec<String> = vec![];
     let mut packages: Vec<String> = vec![];
 
