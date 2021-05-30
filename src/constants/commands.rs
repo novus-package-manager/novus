@@ -1,5 +1,5 @@
 #[allow(unused)]
-pub const COMMANDS: [[&str; 2]; 7] = [
+pub const COMMANDS: [[&str; 2]; 9] = [
   ["install", "i"],
   ["uninstall", "u"],
   ["update", "updgrade"],
@@ -7,10 +7,12 @@ pub const COMMANDS: [[&str; 2]; 7] = [
   ["search", "find"],
   ["config", "config"],
   ["list", "show"],
+  ["quit", "exit"],
+  ["forcequit", "forcequit"],
 ];
 
 #[allow(unused)]
-pub const ALL_COMMANDS: [&str; 13] = [
+pub const ALL_COMMANDS: [&str; 16] = [
   "install",
   "i",
   "uninstall",
@@ -24,6 +26,9 @@ pub const ALL_COMMANDS: [&str; 13] = [
   "config",
   "list",
   "show",
+  "quit",
+  "exit",
+  "forcequit",
 ];
 
 #[allow(unused)]
@@ -63,4 +68,10 @@ pub const SEARCH_FLAGS: [[&str; 2]; 5] = [
 ];
 
 #[allow(unused)]
-pub const CLEAN_FLAGS: [[&str; 2]; 2] = [["--yes", "-y"], ["--all", "a"]];
+pub const CLEAN_FLAGS: [[&str; 2]; 2] = [["--yes", "-y"], ["--all", "-a"]];
+
+#[allow(unused)]
+pub const QUIT_FLAGS: [[&str; 2]; 2] = [["--yes", "-y"], ["--force", "-f"]];
+
+#[allow(unused)]
+pub const FORCEQUIT_FLAGS: [[&str; 2]; 1] = [["--yes", "-y"]];

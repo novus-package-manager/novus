@@ -6,19 +6,19 @@ mod constants;
 mod utils;
 
 use colored::Colorize;
-use commands::{clean, install, list, search, uninstall};
+use commands::{clean, install, list, quit, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
 use constants::commands::COMMANDS;
 use handle_args::{get_arguments, verify_args};
-use handle_error::handle_error_and_exit;
 use install::installer;
 use list::list;
+use quit::quit;
 use search::search;
 use serde_json::Value;
 use uninstall::uninstaller;
-use utils::{display_help, get_package, handle_args, handle_error};
+use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -40,8 +40,6 @@ async fn main() {
 
     #[allow(unused)]
     let mut data = String::new();
-
-    let (flags, packages) = get_arguments(&args);
 
     data = get_package::get_packages().await;
 
@@ -68,14 +66,14 @@ async fn main() {
         }
     }
 
-    if command != "search" {
-        let (flags, packages) = verify_args(
-            flags.clone(),
-            packages.clone(),
-            command,
-            package_list.clone(),
-        );
-    };
+    let (flags, packages) = get_arguments(&args);
+
+    let (flags, packages) = verify_args(
+        flags.clone(),
+        packages.clone(),
+        command,
+        package_list.clone(),
+    );
 
     match command {
         "install" => {
@@ -95,6 +93,12 @@ async fn main() {
         }
         "search" => {
             search(package_list, flags, &packages[0]).await;
+        }
+        "quit" => {
+            quit(packages, flags, false);
+        }
+        "forcequit" => {
+            quit(packages, flags, true);
         }
         &_ => {}
     }

@@ -1,7 +1,9 @@
 use crate::constants::commands::{
-    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, UNINSTALL_FLAGS as uninstall_flags, CLEAN_FLAGS as clean_flags, SEARCH_FLAGS as search_flags, COMMANDS
+    ALL_COMMANDS, CLEAN_FLAGS as clean_flags, FORCEQUIT_FLAGS as forcequit_flags,
+    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, QUIT_FLAGS as quit_flags,
+    SEARCH_FLAGS as search_flags, UNINSTALL_FLAGS as uninstall_flags,
 };
-use crate::constants::help_menu::{install_error, uninstall_error};
+use crate::constants::help_menu::{install_error, quit_error, search_error, uninstall_error};
 use colored::Colorize;
 use difflib::get_close_matches;
 use std::{io::prelude::*, process};
@@ -12,8 +14,8 @@ pub fn verify_args(
     command: &str,
     package_list: Vec<&str>,
 ) -> (Vec<String>, Vec<String>) {
-    let mut new_flags: Vec<String> = vec![];
-    let mut new_packages: Vec<String> = vec![];    
+    let mut new_flags: Vec<String> = flags.clone();
+    let mut new_packages: Vec<String> = packages.clone();
 
     if packages.len() == 0 {
         if command == "install" {
@@ -22,45 +24,56 @@ pub fn verify_args(
         if command == "uninstall" {
             uninstall_error();
         }
+        if command == "search" {
+            search_error();
+        }
+        if command == "quit" {
+            quit_error();
+        }
+        if command == "forcequit" {
+            quit_error();
+        }
     }
 
-    for pkg in packages.iter() {
-        let mut pkg_name = pkg.as_str();
-        let mut version = "0";
-        if pkg.contains("@") {
-            let pkg_split: Vec<&str> = pkg.split("@").collect();
-            pkg_name = pkg_split[0];
-            version = pkg_split[1];
-        };
-        let revised_package = get_close_matches(pkg_name, package_list.clone(), 1, 0.6);
-        if package_list.contains(&pkg_name) {
-            new_packages.push(pkg.to_string().clone());
-        } else if revised_package.len() == 1 {
-            print!(
-                "Could not find {} package. Install {} instead? (Y/N): ",
-                pkg_name.bright_magenta(),
-                revised_package[0].bright_green()
-            );
-            std::io::stdout()
-                .flush()
-                .ok()
-                .expect("Could not flush stdout");
-            let mut string: String = String::new();
-            let _ = std::io::stdin().read_line(&mut string);
-            if string.trim().to_lowercase() == "y" {
-                let new_package = revised_package[0].to_string() + "@" + version;
-                new_packages.push(new_package.to_string());
+    if command != "search" && command != "quit" && command != "forcequit" {
+        for pkg in packages.iter() {
+            let mut pkg_name = pkg.as_str();
+            let mut version = "0";
+            if pkg.contains("@") {
+                let pkg_split: Vec<&str> = pkg.split("@").collect();
+                pkg_name = pkg_split[0];
+                version = pkg_split[1];
+            };
+            let revised_package = get_close_matches(pkg_name, package_list.clone(), 1, 0.6);
+            if package_list.contains(&pkg_name) {
+                new_packages.push(pkg.to_string().clone());
+            } else if revised_package.len() == 1 {
+                print!(
+                    "Could not find {} package. Install {} instead? (Y/N): ",
+                    pkg_name.bright_magenta(),
+                    revised_package[0].bright_green()
+                );
+                std::io::stdout()
+                    .flush()
+                    .ok()
+                    .expect("Could not flush stdout");
+                let mut string: String = String::new();
+                let _ = std::io::stdin().read_line(&mut string);
+                if string.trim().to_lowercase() == "y" {
+                    let new_package = revised_package[0].to_string() + "@" + version;
+                    new_packages.push(new_package.to_string());
+                } else {
+                    process::exit(0);
+                }
             } else {
-                process::exit(0);
+                println!(
+                    "Package {} doesn't exist yet :(\n\n{} run {} to view all available packages.",
+                    pkg_name.bright_magenta(),
+                    "info:".bright_blue(),
+                    "novus list".bright_magenta()
+                );
+                std::process::exit(1)
             }
-        } else {
-            println!(
-                "Package {} doesn't exist yet :(\n\n{} run {} to view all available packages.",
-                pkg_name.bright_magenta(),
-                "info:".bright_blue(),
-                "novus list".bright_magenta()
-            );
-            std::process::exit(1)
         }
     }
 
@@ -110,6 +123,24 @@ pub fn verify_args(
                 }
             }
         }
+        "quit" => {
+            for flag in flags.iter() {
+                for quit_flag in quit_flags.iter() {
+                    if quit_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
+        "forcequit" => {
+            for flag in flags.iter() {
+                for forcequit_flag in forcequit_flags.iter() {
+                    if forcequit_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
         &_ => {}
     }
 
@@ -121,20 +152,8 @@ pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
     let mut flags: Vec<String> = vec![];
     let mut packages: Vec<String> = vec![];
 
-    for cmd in COMMANDS.iter() {
-        if command == cmd[1] {
-            command = cmd[0];
-        }
-    }
-
     for arg in 2..args.len() {
-        if command == "install"
-            || command == "uninstall"
-            || command == "update"
-            || command == "list"
-            || command == "search"
-            || command == "clean"
-        {
+        if ALL_COMMANDS.contains(&command) {
             if args[arg].starts_with("-") {
                 flags.push(args[arg].clone());
             } else {
