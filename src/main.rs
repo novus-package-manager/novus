@@ -95,10 +95,10 @@ async fn main() {
             search(package_list, flags, &packages[0]).await;
         }
         "quit" => {
-            quit(packages, flags, false);
+            quit(packages, flags, false).await;
         }
         "forcequit" => {
-            quit(packages, flags, true);
+            quit(packages, flags, true).await;
         }
         &_ => {}
     }

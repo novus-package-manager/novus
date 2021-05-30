@@ -1,7 +1,9 @@
+use crate::classes::package::Package;
+use crate::utils::get_package::get_package;
 use colored::Colorize;
 use std::{io::prelude::*, process};
 
-pub fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
+pub async fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
     let mut confirm = false;
     if flags.contains(&"-f".to_string()) || flags.contains(&"--force".to_string()) {
         force = true;
@@ -21,16 +23,16 @@ pub fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
                 let mut string: String = String::new();
                 let _ = std::io::stdin().read_line(&mut string);
                 if string.trim().to_lowercase() == "y" {
-                    exit_code = forcequit_app(app);
+                    exit_code = forcequit_app(app).await;
                 } else {
                     println!("\n{}", "Aborted!".bright_blue());
                     process::exit(0);
                 }
             } else {
-                exit_code = forcequit_app(app);
+                exit_code = forcequit_app(app).await;
             }
         } else {
-            exit_code = quit_app(app);
+            exit_code = quit_app(app).await;
         }
     }
     if exit_code == 0 {
@@ -48,8 +50,10 @@ pub fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
     }
 }
 
-fn forcequit_app(app: String) -> i32 {
-    let executable = app.to_string() + ".exe";
+async fn forcequit_app(app: String) -> i32 {
+    let package: Package = get_package(&app).await;
+    let exec_name = package.exec_name;
+    let executable = exec_name + ".exe";
     let exit_code = process::Command::new("taskkill")
         .args(&["/im", &executable, "/f"])
         .spawn()
@@ -62,8 +66,10 @@ fn forcequit_app(app: String) -> i32 {
     exit_code
 }
 
-fn quit_app(app: String) -> i32 {
-    let executable = app.to_string() + ".exe";
+async fn quit_app(app: String) -> i32 {
+    let package: Package = get_package(&app).await;
+    let exec_name = package.exec_name;
+    let executable = exec_name + ".exe";
     let exit_code = process::Command::new("taskkill")
         .args(&["/im", &executable])
         .spawn()
