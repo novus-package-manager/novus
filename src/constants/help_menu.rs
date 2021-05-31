@@ -16,6 +16,7 @@ Commands:
   {} {} {} Updates packages.
   {} {} {} Lists all packages.
   {} {} {} Searches for packages.  
+  {} {} {} Provides information on a specific package.
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -36,6 +37,9 @@ Run {} for more info about each command."#,
         "*".bright_magenta().bold(),
         "search".bright_cyan(),
         "(find)".yellow(),
+        "*".bright_magenta().bold(),
+        "info".bright_cyan(),
+        "(details)".yellow(),
         "novus [command] --help".bright_green(),
     );
 
@@ -143,6 +147,7 @@ Usage: {} {}
 Options: 
   {} {} Displays all packages available
   {} {} Displays only installed packages
+  {} {} Displays only local packages
   {} {} Displays only the package names"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
@@ -151,10 +156,37 @@ Options:
         "(-a)".yellow(),
         "--installed".bright_cyan(),
         "(-i)".yellow(),
+        "--local".bright_cyan(),
+        "(-l)".yellow(),
         "--names".bright_cyan(),
         "(-n)".yellow(),
     );
     println!("{}", list);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn info_help() {
+    let info = format!(
+        r#"
+Novus Package Manager {}
+
+Provides information on a specific package.
+
+Usage: {} {}
+
+Options: 
+  {} {} Displays only installed packages
+  {} {} Displays only local packages"#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "list".bright_purple(),
+        "--installed".bright_cyan(),
+        "(-i)".yellow(),
+        "--local".bright_cyan(),
+        "(-l)".yellow(),
+    );
+    println!("{}", info);
     std::process::exit(0);
 }
 
@@ -283,7 +315,7 @@ Novus Package Manager {}
 
 #[allow(unused)]
 pub fn search_error() {
-    let uninstall_error = format!(
+    let search_error = format!(
         r#"
 Novus Package Manager {}
 
@@ -295,13 +327,31 @@ Novus Package Manager {}
         "info".bright_blue(),
         "novus search --help".bright_green()
     );
-    println!("{}", uninstall_error);
+    println!("{}", search_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn info_error() {
+    let info_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing package to provide information on.
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus info --help".bright_green()
+    );
+    println!("{}", info_error);
     std::process::exit(0);
 }
 
 #[allow(unused)]
 pub fn quit_error() {
-    let uninstall_error = format!(
+    let quit_error = format!(
         r#"
 Novus Package Manager {}
 
@@ -313,7 +363,7 @@ Novus Package Manager {}
         "info".bright_blue(),
         "novus quit --help".bright_green()
     );
-    println!("{}", uninstall_error);
+    println!("{}", quit_error);
     std::process::exit(0);
 }
 

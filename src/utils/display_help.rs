@@ -1,7 +1,8 @@
 use crate::constants::commands::COMMANDS;
 use crate::constants::help_menu::{
-    about, clean_help, forcequit_help, install_error, install_help, invalid_command, list_help,
-    quit_error, quit_help, search_error, search_help, uninstall_error, uninstall_help, update_help,
+    about, clean_help, forcequit_help, info_error, info_help, install_error, install_help,
+    invalid_command, list_help, quit_error, quit_help, search_error, search_help, uninstall_error,
+    uninstall_help, update_help,
 };
 use crate::constants::version::__VERSION__;
 use colored::Colorize;
@@ -26,6 +27,7 @@ pub fn display_help(args: &Vec<String>) -> &String {
             "search" => search_error(),
             "quit" => quit_error(),
             "forcequit" => quit_error(),
+            "info" => info_error(),
             "--help" => about(),
             "-h" => about(),
             "-?" => about(),
@@ -50,6 +52,7 @@ pub fn display_help(args: &Vec<String>) -> &String {
                     "quit" => quit_help(),
                     "forcequit" => forcequit_help(),
                     "clean" => clean_help(),
+                    "info" => info_help(),
                     &_ => invalid_command(command),
                 }
             }

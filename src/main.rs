@@ -6,12 +6,13 @@ mod constants;
 mod utils;
 
 use colored::Colorize;
-use commands::{clean, install, list, quit, search, uninstall};
+use commands::{clean, info, install, list, quit, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
 use constants::commands::COMMANDS;
 use handle_args::{get_arguments, verify_args};
+use info::info;
 use install::installer;
 use list::list;
 use quit::quit;
@@ -99,6 +100,9 @@ async fn main() {
         }
         "forcequit" => {
             quit(packages, flags, true).await;
+        }
+        "info" => {
+            info(args);
         }
         &_ => {}
     }

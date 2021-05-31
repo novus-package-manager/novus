@@ -1,11 +1,9 @@
 use crate::constants::commands::{
     ALL_COMMANDS, CLEAN_FLAGS as clean_flags, FORCEQUIT_FLAGS as forcequit_flags,
-    INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, QUIT_FLAGS as quit_flags,
-    SEARCH_FLAGS as search_flags, UNINSTALL_FLAGS as uninstall_flags,
+    INFO_FLAGS as info_flags, INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags,
+    QUIT_FLAGS as quit_flags, SEARCH_FLAGS as search_flags, UNINSTALL_FLAGS as uninstall_flags,
 };
-use crate::constants::help_menu::{
-    install_error, invalid_command, quit_error, search_error, uninstall_error,
-};
+use crate::constants::help_menu::invalid_command;
 use colored::Colorize;
 use difflib::get_close_matches;
 use std::{io::prelude::*, process};
@@ -19,25 +17,7 @@ pub fn verify_args(
     let mut new_flags: Vec<String> = flags.clone();
     let mut new_packages: Vec<String> = packages.clone();
 
-    if packages.len() == 0 {
-        if command == "install" {
-            install_error();
-        }
-        if command == "uninstall" {
-            uninstall_error();
-        }
-        if command == "search" {
-            search_error();
-        }
-        if command == "quit" {
-            quit_error();
-        }
-        if command == "forcequit" {
-            quit_error();
-        }
-    }
-
-    if command != "search" && command != "list" {
+    if command != "search" && command != "list" && command != "info" {
         new_packages = vec![];
         new_flags = vec![];
         for pkg in packages.iter() {
@@ -105,6 +85,15 @@ pub fn verify_args(
             for flag in flags.iter() {
                 for list_flag in list_flags.iter() {
                     if list_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
+        "info" => {
+            for flag in flags.iter() {
+                for info_flag in info_flags.iter() {
+                    if info_flag.contains(&flag.as_str()) {
                         new_flags.push(flag.clone());
                     }
                 }

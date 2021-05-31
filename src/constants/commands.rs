@@ -1,5 +1,5 @@
 #[allow(unused)]
-pub const COMMANDS: [[&str; 2]; 9] = [
+pub const COMMANDS: [[&str; 2]; 10] = [
   ["install", "i"],
   ["uninstall", "u"],
   ["update", "updgrade"],
@@ -9,10 +9,11 @@ pub const COMMANDS: [[&str; 2]; 9] = [
   ["list", "show"],
   ["quit", "exit"],
   ["forcequit", "forcequit"],
+  ["info", "details"],
 ];
 
 #[allow(unused)]
-pub const ALL_COMMANDS: [&str; 16] = [
+pub const ALL_COMMANDS: [&str; 18] = [
   "install",
   "i",
   "uninstall",
@@ -29,6 +30,8 @@ pub const ALL_COMMANDS: [&str; 16] = [
   "quit",
   "exit",
   "forcequit",
+  "info",
+  "details",
 ];
 
 #[allow(unused)]
@@ -61,6 +64,9 @@ pub const LIST_FLAGS: [[&str; 2]; 4] = [
   ["--all", "-a"],
   ["--local", "-l"],
 ];
+
+#[allow(unused)]
+pub const INFO_FLAGS: [[&str; 2]; 2] = [["--installed", "-i"], ["--local", "-l"]];
 
 #[allow(unused)]
 pub const SEARCH_FLAGS: [[&str; 2]; 5] = [

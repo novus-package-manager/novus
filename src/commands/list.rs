@@ -21,9 +21,8 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
         local = true;
     }
     println!(
-        "novus {} \n\n{}\n",
-        __VERSION__.bright_green().bold(),
-        "Packages:".bright_purple(),
+        "\nNovus Package Manager {}\n",
+        __VERSION__.bright_green().bold()
     );
     if installed {
         let temp = std::env::var("TEMP").unwrap();
@@ -35,6 +34,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
             .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let installed_packages: Vec<String> = json.clone().packages;
         if number as usize >= installed_packages.len() || number == 0 {
+            if installed_packages.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for package in installed_packages {
                 let package_split: Vec<&str> = package.split("@").collect();
                 let pkg: &str = package_split[0];
@@ -47,6 +51,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
                 }
             }
         } else {
+            if installed_packages.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for index in 0..number {
                 let package = &installed_packages[index as usize];
                 let package_split: Vec<&str> = package.split("@").collect();
@@ -63,6 +72,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
     } else if local {
         let name_versions = get_local_packages();
         if number as usize >= packages.len() || number == 0 {
+            if name_versions.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for (display_name, display_version) in name_versions {
                 if display_name != "Unknown" {
                     if version {
@@ -74,6 +88,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
                 }
             }
         } else {
+            if name_versions.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for index in 0..number {
                 let (display_name, display_version) = &name_versions[index as usize];
                 if display_name != "Unknown" {
@@ -88,6 +107,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
         }
     } else {
         if number as usize >= packages.len() || number == 0 {
+            if packages.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for package in packages {
                 if version {
                     let package_struct: Package = get_package(package).await;
@@ -98,6 +122,11 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
                 }
             }
         } else {
+            if packages.len() != 0 {
+                println!("{}\n", "Packages: ".bright_purple());
+            } else {
+                println!("{}", "No packages found!".bright_cyan());
+            }
             for index in 0..number {
                 let package = &packages[index as usize];
                 if version {
