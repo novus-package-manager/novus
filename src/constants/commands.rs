@@ -55,8 +55,12 @@ pub const UNINSTALL_FLAGS: [[&str; 2]; 7] = [
 ];
 
 #[allow(unused)]
-pub const LIST_FLAGS: [[&str; 2]; 3] =
-  [["--installed", "-i"], ["--version", "-v"], ["--all", "-a"]];
+pub const LIST_FLAGS: [[&str; 2]; 4] = [
+  ["--installed", "-i"],
+  ["--version", "-v"],
+  ["--all", "-a"],
+  ["--local", "-l"],
+];
 
 #[allow(unused)]
 pub const SEARCH_FLAGS: [[&str; 2]; 5] = [

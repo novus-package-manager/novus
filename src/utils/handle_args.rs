@@ -3,7 +3,9 @@ use crate::constants::commands::{
     INSTALL_FLAGS as install_flags, LIST_FLAGS as list_flags, QUIT_FLAGS as quit_flags,
     SEARCH_FLAGS as search_flags, UNINSTALL_FLAGS as uninstall_flags,
 };
-use crate::constants::help_menu::{install_error, quit_error, search_error, uninstall_error};
+use crate::constants::help_menu::{
+    install_error, invalid_command, quit_error, search_error, uninstall_error,
+};
 use colored::Colorize;
 use difflib::get_close_matches;
 use std::{io::prelude::*, process};
@@ -35,7 +37,7 @@ pub fn verify_args(
         }
     }
 
-    if command != "search" {
+    if command != "search" && command != "list" {
         new_packages = vec![];
         new_flags = vec![];
         for pkg in packages.iter() {
@@ -162,6 +164,8 @@ pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
             } else {
                 packages.push(args[arg].clone().to_lowercase());
             }
+        } else {
+            invalid_command(command);
         }
     }
 

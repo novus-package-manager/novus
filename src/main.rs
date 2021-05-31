@@ -86,7 +86,7 @@ async fn main() {
             installer(packages, flags).await;
         }
         "list" => {
-            list(package_list, flags).await;
+            list(package_list, flags, args).await;
         }
         "clean" => {
             clean(args);

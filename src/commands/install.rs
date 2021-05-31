@@ -8,6 +8,7 @@ use get_package::get_package;
 use handle_error::handle_error_and_exit;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::io::{BufReader, BufWriter, Write};
+use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{fs::File, u64};
@@ -16,12 +17,16 @@ use std::{fs::File, u64};
 pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     let mut no_progress = false;
     let mut no_color = false;
+    let mut confirm = false;
     let mut packages_version: Vec<String> = vec![];
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
     if flags.contains(&"--no-progress".to_string()) || flags.contains(&"-np".to_string()) {
         no_progress = true;
+    }
+    if flags.contains(&"--yes".to_string()) || flags.contains(&"-y".to_string()) {
+        confirm = true;
     }
     let mut handles = vec![];
     let mut sizes = vec![];
@@ -65,6 +70,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         if desired_version == "0" {
             desired_version = latest_version.as_str();
         }
+        check_installed(pkg_name, desired_version, no_color, confirm);
         let package_ver = pkg.to_string() + "@" + desired_version;
         packages_version.push(package_ver);
         let display_name = package.display_name;
@@ -142,7 +148,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                         "Failed to Install".bright_red(),
                         display_name.bright_red()
                     );
-                    std::process::exit(1);
+                    process::exit(1);
                 }
             }
             install(
@@ -204,6 +210,100 @@ fn get_splits(i: u64, total_length: u64, threads: u64) -> (u64, u64) {
     }
 
     (start, end)
+}
+
+fn check_installed(package_name: &str, version: &str, no_color: bool, confirm: bool) {
+    let temp = std::env::var("TEMP").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let path = std::path::Path::new(loc.as_str());
+    let package_version = package_name.to_string() + "@" + version;
+    if path.exists() {
+        let contents =
+            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let installed_packages = json.clone().packages;
+
+        if installed_packages.contains(&package_version) {
+            if !confirm {
+                if no_color {
+                    println!(
+                        "{}{}{}",
+                        "This version of ", package_name, " already exists on your system."
+                    );
+                } else {
+                    println!(
+                        "{}{}{}",
+                        "This version of ",
+                        package_name.bright_cyan(),
+                        " already exists on your system."
+                    );
+                }
+                print!("Do you want to reinstall {} (Y/N): ", package_name);
+                std::io::stdout()
+                    .flush()
+                    .ok()
+                    .expect("Could not flush stdout");
+                let mut string: String = String::new();
+                let _ = std::io::stdin().read_line(&mut string);
+                if string.trim().to_lowercase() != "y" {
+                    process::exit(0);
+                }
+            }
+        }
+
+        for installed_package in installed_packages {
+            let installed_packages_split: Vec<&str> = installed_package.split("@").collect();
+            let installed_name = installed_packages_split[0];
+            let installed_version = installed_packages_split[1];
+            if package_name == installed_name {
+                let installed_version_split: Vec<&str> = installed_version.split(".").collect();
+                let version_split: Vec<&str> = version.split(".").collect();
+                let version_num: u64 = version_split
+                    .into_iter()
+                    .collect::<String>()
+                    .parse::<u64>()
+                    .unwrap();
+                let installed_version_num: u64 = installed_version_split
+                    .into_iter()
+                    .collect::<String>()
+                    .parse::<u64>()
+                    .unwrap();
+                if installed_version_num > version_num {
+                    if !confirm {
+                        if no_color {
+                            println!(
+                                "{}{}{}",
+                                "A later version of ",
+                                package_name,
+                                " is already installed on your system."
+                            );
+                        } else {
+                            println!(
+                                "{}{}{}",
+                                "A later version of ",
+                                package_name.bright_cyan(),
+                                " is already installed on your system."
+                            );
+                        }
+                        print!(
+                            "Do you want to reinstall an older of {} (Y/N): ",
+                            package_name
+                        );
+                        std::io::stdout()
+                            .flush()
+                            .ok()
+                            .expect("Could not flush stdout");
+                        let mut string: String = String::new();
+                        let _ = std::io::stdin().read_line(&mut string);
+                        if string.trim().to_lowercase() != "y" {
+                            process::exit(0);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 pub async fn threadeddownload(
@@ -378,18 +478,20 @@ pub async fn install(
 
     let cmd = tokio::spawn(async move {
         if file_type == ".exe" {
-            let _cmd = std::process::Command::new(output_file.clone())
+            let output = process::Command::new(output_file.clone())
                 .args(switch)
-                .spawn()
-                .unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
-                })
-                .wait_with_output()
+                // .spawn()
+                // .unwrap_or_else(|e| {
+                //     handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                // })
+                .output()
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
+            let msg = std::str::from_utf8(&output.stderr).unwrap();
+            println!("msg: {}", msg);
         } else if file_type == ".msi" {
-            let _cmd = std::process::Command::new("MsiExec")
+            let _cmd = process::Command::new("MsiExec")
                 .args(&["/i", output_file.clone().as_str(), "/passive"])
                 .spawn()
                 .unwrap_or_else(|e| {
@@ -400,7 +502,7 @@ pub async fn install(
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
         } else {
-            let _cmd = std::process::Command::new("powershell")
+            let _cmd = process::Command::new("powershell")
                 .arg(output_file.clone())
                 .spawn()
                 .unwrap_or_else(|e| {

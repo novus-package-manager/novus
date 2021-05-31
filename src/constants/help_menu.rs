@@ -318,6 +318,43 @@ Novus Package Manager {}
 }
 
 #[allow(unused)]
+pub fn list_error(arg: &String) {
+    let uninstall_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Unexpected {}
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        arg,
+        "info".bright_blue(),
+        "novus list --help".bright_green()
+    );
+    println!("{}", uninstall_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn list_number_error() {
+    let uninstall_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Unexpected a number. Found a string instead.
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus list --help".bright_green()
+    );
+    println!("{}", uninstall_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
 pub fn invalid_command(command: &str) {
     println!(
         "{} {}\n{} Use {} for the list of all the commands\n",
