@@ -176,13 +176,10 @@ Provides information on a specific package.
 Usage: {} {}
 
 Options: 
-  {} {} Displays only installed packages
-  {} {} Displays only local packages"#,
+\  {} {} Displays only local packages"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "list".bright_purple(),
-        "--installed".bright_cyan(),
-        "(-i)".yellow(),
         "--local".bright_cyan(),
         "(-l)".yellow(),
     );
@@ -342,6 +339,23 @@ Novus Package Manager {}
 {} Use {} for more information about this command."#,
         __VERSION__.bright_green().bold(),
         "error".bright_red(),
+        "info".bright_blue(),
+        "novus info --help".bright_green()
+    );
+    println!("{}", info_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn info_wrong_package_error() {
+    let info_error = format!(
+        r#"{}
+
+Try running with the {} flag to provide information on packages which exist locally on your system.
+      
+{} Use {} for more information about this command."#,
+        "Failed to locate package information.".bright_cyan(),
+        "-l".bright_green(),
         "info".bright_blue(),
         "novus info --help".bright_green()
     );

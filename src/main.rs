@@ -102,7 +102,7 @@ async fn main() {
             quit(packages, flags, true).await;
         }
         "info" => {
-            info(args);
+            info(args, package_list).await;
         }
         &_ => {}
     }

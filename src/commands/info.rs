@@ -1,15 +1,19 @@
 use crate::classes::local_package_info::LocalPackageInfo;
+use crate::classes::package::Package;
+use crate::classes::package_info::PackageInfo;
+use crate::constants::help_menu::info_wrong_package_error;
 use crate::constants::version::__VERSION__;
+use crate::utils::get_package::get_package;
 use crate::utils::registry::get_local_info;
 use colored::Colorize;
 
-pub fn info(args: Vec<String>) {
+pub async fn info(args: Vec<String>, packages: Vec<&str>) {
     println!(
         "\nNovus Package Manager {}\n",
         __VERSION__.bright_green().bold()
     );
 
-    let (package, flags) = verify_args(args);
+    let (package, flags) = verify_args(args, packages);
 
     let mut local = false;
     if flags.contains(&"--local".to_string()) || flags.contains(&"-l".to_string()) {
@@ -17,6 +21,7 @@ pub fn info(args: Vec<String>) {
     }
     if local {
         let package_info: LocalPackageInfo = get_local_info(package);
+        println!("");
         if package_info.comments != "Unknown" && package_info.comments != "" {
             print!("{}{:<40}", " - ".bright_blue(), "Comments".bright_cyan());
             println!("{}", package_info.comments);
@@ -110,10 +115,94 @@ pub fn info(args: Vec<String>) {
             println!("{}", package_info.url_update_info);
         }
         println!("");
+    } else {
+        let package_info = get_package_info(package).await;
+        if package_info.package_name != "Unknown" && package_info.package_name != "" {
+            print!("{}{:<40}", " - ".bright_blue(), "PackageName".bright_cyan());
+            println!("{}", package_info.package_name);
+        }
+        if package_info.display_name != "Unknown" && package_info.display_name != "" {
+            print!("{}{:<40}", " - ".bright_blue(), "DisplayName".bright_cyan());
+            println!("{}", package_info.display_name);
+        }
+        if package_info.exec_name != "Unknown" && package_info.exec_name != "" {
+            print!(
+                "{}{:<40}",
+                " - ".bright_blue(),
+                "ExecutableName".bright_cyan()
+            );
+            println!("{}", package_info.exec_name);
+        }
+        if package_info.latest_version != "Unknown" && package_info.latest_version != "" {
+            print!(
+                "{}{:<40}",
+                " - ".bright_blue(),
+                "LatestVersion".bright_cyan()
+            );
+            println!("{}", package_info.latest_version);
+        }
+        if package_info.threads != 0 {
+            print!("{}{:<40}", " - ".bright_blue(), "Threads".bright_cyan());
+            println!("{}", package_info.threads);
+        }
+        if package_info.iswitches.len() != 0 {
+            print!(
+                "{}{:<40}",
+                " - ".bright_blue(),
+                "InstallSwitches".bright_cyan()
+            );
+            println!("{:?}", package_info.iswitches);
+        }
+        if package_info.uswitches.len() != 0 {
+            print!(
+                "{}{:<40}",
+                " - ".bright_blue(),
+                "UninstallSwitches".bright_cyan()
+            );
+            println!("{:?}", package_info.uswitches);
+        }
+        if package_info.url != "Unknown" && package_info.url != "" {
+            print!("{}{:<40}", " - ".bright_blue(), "Url".bright_cyan());
+            println!("{}", package_info.url);
+        }
+        if package_info.size != 0 {
+            print!("{}{:<40}", " - ".bright_blue(), "Size".bright_cyan());
+            println!("{}", package_info.size);
+        }
+        if package_info.checksum != "Unknown" && package_info.checksum != "" {
+            print!(
+                "{}{:<40}",
+                " - ".bright_blue(),
+                "Checksum (SHA256)".bright_cyan()
+            );
+            println!("{}", package_info.checksum);
+        }
+        if package_info.file_type != "Unknown" && package_info.file_type != "" {
+            print!("{}{:<40}", " - ".bright_blue(), "FileType".bright_cyan());
+            println!("{}", package_info.file_type);
+        }
+        println!("");
     }
 }
 
-fn verify_args(args: Vec<String>) -> (String, Vec<String>) {
+async fn get_package_info(package_name: String) -> PackageInfo {
+    let package: Package = get_package(&package_name).await;
+    PackageInfo {
+        package_name: package.package_name,
+        display_name: package.display_name,
+        exec_name: package.exec_name,
+        latest_version: package.latest_version.clone(),
+        threads: package.threads,
+        iswitches: package.iswitches,
+        uswitches: package.uswitches,
+        url: package.versions[&package.latest_version].url.clone(),
+        size: package.versions[&package.latest_version].size.clone(),
+        checksum: package.versions[&package.latest_version].checksum.clone(),
+        file_type: package.versions[&package.latest_version].file_type.clone(),
+    }
+}
+
+fn verify_args(args: Vec<String>, packages: Vec<&str>) -> (String, Vec<String>) {
     let mut flags = vec![];
     let mut package = String::new();
     for arg in args {
@@ -121,6 +210,12 @@ fn verify_args(args: Vec<String>) -> (String, Vec<String>) {
             flags.push(arg);
         } else {
             package = arg;
+        }
+    }
+
+    if !flags.contains(&"-l".to_string()) && !flags.contains(&"--local".to_string()) {
+        if !packages.contains(&package.as_str()) {
+            info_wrong_package_error();
         }
     }
 

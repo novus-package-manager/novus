@@ -66,7 +66,7 @@ pub const LIST_FLAGS: [[&str; 2]; 4] = [
 ];
 
 #[allow(unused)]
-pub const INFO_FLAGS: [[&str; 2]; 2] = [["--installed", "-i"], ["--local", "-l"]];
+pub const INFO_FLAGS: [[&str; 2]; 1] = [["--local", "-l"]];
 
 #[allow(unused)]
 pub const SEARCH_FLAGS: [[&str; 2]; 5] = [
