@@ -33,7 +33,7 @@ pub fn clear_cache_for_package(package: &str) {
             fs::remove_file(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         }
     }
-}
+  }
 }
 
 #[allow(unused)]

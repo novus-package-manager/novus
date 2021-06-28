@@ -48,13 +48,17 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     }
     if sizes.len() > 1 {
         multi = true;
-        if no_color {
-            println!("Installing Packages");
-        } else {
-            println!("{}", "Installing Packages".bright_green());
-        }
     }
-    let start = std::time::Instant::now();
+
+    if no_color {
+        println!("Installing Packages");
+    } else {
+        println!("{}", "Installing Packages".bright_green());
+    }
+
+    let mut code = 0;
+
+    // let start = std::time::Instant::now();
     for pkg in packages.iter() {
         let mut max = true;
         let pkg_split: Vec<&str> = pkg.split("@").collect();
@@ -70,27 +74,16 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         if desired_version == "0" {
             desired_version = latest_version.as_str();
         }
-        check_installed(pkg_name, desired_version, no_color, confirm);
+        // check_installed(pkg_name, desired_version, no_color, confirm);
         let package_ver = pkg.to_string() + "@" + desired_version;
         packages_version.push(package_ver);
         let display_name = package.display_name;
         let threads = package.threads;
-        if multi == false {
-            if no_color {
-                println!("Installing {}", display_name);
-            } else {
-                println!(
-                    "{} {}",
-                    "Installing".bright_green(),
-                    display_name.bright_green()
-                );
-            }
-        }
         package
             .versions
             .get(&desired_version.to_string())
             .unwrap_or_else(|| {
-                handle_error_and_exit("That version does not exist yet".to_string())
+                handle_error_and_exit(format!("That version of {} does not exist yet", pkg_clone))
             });
         let url = package.versions[&desired_version.to_string()].url.clone();
         let checksum = package.versions[&desired_version.to_string()]
@@ -101,7 +94,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
             .clone();
         let iswitch = package.iswitches.clone();
         let temp = std::env::var("TEMP")
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:50", e.to_string())));
+            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:110", e.to_string())));
         let package_name = package.package_name;
         let loc = format!(
             r"{}\novus\{}@{}{}",
@@ -131,7 +124,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                 .await;
             }
             if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
-                println!("{}", "Clearing Cache and Retrying".bright_blue());
+                println!("{}", "Clearing cache and retrying".bright_blue());
                 crate::utils::cache::clear_cache_for_package(&package_name);
                 threadeddownload(
                     url.clone(),
@@ -151,7 +144,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                     process::exit(1);
                 }
             }
-            install(
+            code = install(
                 &iswitch,
                 loc.clone(),
                 display_name,
@@ -164,36 +157,45 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
     }
 
     futures::future::join_all(handles).await;
-    let temp = std::env::var("TEMP").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", temp);
-    let path = std::path::Path::new(loc.as_str());
-    if path.exists() {
-        let contents =
-            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let mut installed_packages = json.clone().packages;
-        installed_packages.append(&mut packages_version);
-        let installed_packages: Packages = Packages {
-            packages: installed_packages,
-        };
-        let file =
-            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+
+    if code == 0 {
+        let temp = std::env::var("TEMP").unwrap();
+        let loc = format!(r"{}\novus\config\installed.json", temp);
+        let path = std::path::Path::new(loc.as_str());
+        if path.exists() {
+            let contents = std::fs::read_to_string(path)
+                .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
+                .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            let mut installed_packages = json.clone().packages;
+            installed_packages.append(&mut packages_version);
+            let installed_packages: Packages = Packages {
+                packages: installed_packages,
+            };
+            let file = std::fs::File::create(path)
+                .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+        } else {
+            let installed_packages: Packages = Packages {
+                packages: packages_version,
+            };
+            let file = std::fs::File::create(path)
+                .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+        }
+        if no_color {
+            println!("Successfully installed packages");
+        } else {
+            println!("{}", "Successfully installed packages".bright_magenta());
+        }
     } else {
-        let installed_packages: Packages = Packages {
-            packages: packages_version,
-        };
-        let file =
-            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+        if no_color {
+            println!("Failed to install packages");
+        } else {
+            println!("{}", "Failed to install packages".bright_red());
+        }
     }
-    if no_color {
-        println!("Successfully installed packages");
-    } else {
-        println!("{}", "Successfully installed packages".bright_magenta());
-    }
-    println!("Completed in {:?}", start.elapsed());
+    // println!("Completed in {:?}", start.elapsed());
 }
 
 #[allow(unused)]
@@ -428,7 +430,7 @@ pub async fn install(
     multi: bool,
     no_color: bool,
     file_type: String,
-) {
+) -> i32 {
     let progress_bar = ProgressBar::new(0);
     let completed = Arc::new(AtomicBool::new(false));
     let completed_clone = completed.clone();
@@ -476,7 +478,10 @@ pub async fn install(
         progress_bar.finish_and_clear();
     });
 
+    let mut code = Some(0);
+
     let cmd = tokio::spawn(async move {
+        let mut error_message = "Failed to install packages".to_string();
         if file_type == ".exe" {
             let output = process::Command::new(output_file.clone())
                 .args(switch)
@@ -488,34 +493,51 @@ pub async fn install(
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
-            let msg = std::str::from_utf8(&output.stderr).unwrap();
-            println!("msg: {}", msg);
+            code = output.status.code();
+            error_message = String::from_utf8(output.stderr).unwrap_or_else(|_| {
+                handle_error_and_exit("Failed to get error message".to_string())
+            });
         } else if file_type == ".msi" {
-            let _cmd = process::Command::new("MsiExec")
+            let output = process::Command::new("MsiExec")
                 .args(&["/i", output_file.clone().as_str(), "/passive"])
-                .spawn()
-                .unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
-                })
-                .wait_with_output()
+                // .spawn()
+                // .unwrap_or_else(|e| {
+                //     handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                // })
+                .output()
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
+            code = output.status.code();
+            error_message = String::from_utf8(output.stderr).unwrap_or_else(|_| {
+                handle_error_and_exit("Failed to get error message".to_string())
+            });
         } else {
-            let _cmd = process::Command::new("powershell")
+            let output = process::Command::new("powershell")
                 .arg(output_file.clone())
-                .spawn()
-                .unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
-                })
-                .wait_with_output()
+                // .spawn()
+                // .unwrap_or_else(|e| {
+                //     handle_error_and_exit(format!("{} install.rs:227", e.to_string()))
+                // })
+                .output()
                 .unwrap_or_else(|e| {
                     handle_error_and_exit(format!("{} install.rs:229", e.to_string()))
                 });
+            code = output.status.code();
+            error_message = String::from_utf8(output.stderr).unwrap_or_else(|_| {
+                handle_error_and_exit("Failed to get error message".to_string())
+            });
+        }
+        if code.unwrap_or_else(|| handle_error_and_exit("Failed to get return code".to_string()))
+            == 1
+        {
+            handle_error_and_exit(error_message);
         }
     });
 
     let _ = cmd.await;
     completed.store(true, Ordering::Relaxed);
     let _ = handle.await;
+
+    code.unwrap_or_else(|| handle_error_and_exit("Failed to get return code".to_string()))
 }
