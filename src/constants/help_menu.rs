@@ -176,7 +176,7 @@ Provides information on a specific package.
 Usage: {} {}
 
 Options: 
-\  {} {} Displays only local packages"#,
+  {} {} Displays only local packages"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "list".bright_purple(),
