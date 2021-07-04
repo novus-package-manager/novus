@@ -1,16 +1,10 @@
-#![cfg(windows)]
-
-mod classes;
 mod commands;
-mod constants;
-mod utils;
-
 use colored::Colorize;
 use commands::{clean, info, install, list, quit, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
-use constants::commands::COMMANDS;
+use utils::constants::commands::COMMANDS;
 use handle_args::{get_arguments, verify_args};
 use info::info;
 use install::installer;
