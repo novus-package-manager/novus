@@ -1,0 +1,25 @@
+[package]
+name = "cli"
+version = "0.1.0"
+authors = ["Varun Potti <potti.varun07@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+utils = {path = "../utils"}
+colored = "2.0.0"
+indicatif="0.16.0"
+difflib = "0.4.0"
+tokio = { version = "1.5.0", features = ["full"] }
+futures = "0.3"
+winreg = "0.9.0"
+reqwest = { version = "0.11.3", features = ["stream", "blocking"] }
+winapi = { version = "0.3", features = ["winuser"] }
+serde = { version = "1.0.125", features = ["derive"] }
+serde_json = "1.0.64"
+clipboard-win = "4.2.1"
+sha2 = "0.9.5"
+regex = "1.5.4"
+ansi_term = "0.12.1"
+ctrlc = { version = "3.0", features = ["termination"] }
