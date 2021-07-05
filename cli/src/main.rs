@@ -14,6 +14,7 @@ use search::search;
 use serde_json::Value;
 use uninstall::uninstaller;
 use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
+use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
 // use std::time::Instant;
 
 #[allow(unused)]
@@ -122,73 +123,11 @@ fn create_dirs() {
     let loc = format!(r"{}\novus\scripts\auto_elevate_install.bat", temp);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
-        std::fs::write(path, "@echo off
-
-        :: BatchGotAdmin
-        :-------------------------------------
-        REM  --> Check for permissions
-            IF \"%PROCESSOR_ARCHITECTURE%\" EQU \"amd64\" (
-        >nul 2>&1 \"%SYSTEMROOT%\\SysWOW64\\cacls.exe\" \"%SYSTEMROOT%\\SysWOW64\\config\\system\"
-        ) ELSE (
-        >nul 2>&1 \"%SYSTEMROOT%\\system32\\cacls.exe\" \"%SYSTEMROOT%\\system32\\config\\system\"
-        )
-        
-        REM --> If error flag set, we do not have admin.
-        if '%errorlevel%' NEQ '0' (
-            goto UACPrompt
-        ) else ( goto gotAdmin )
-        
-        :UACPrompt
-            echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%temp%\\getadmin.vbs\"
-            set params= %*
-            echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%temp%\\getadmin.vbs\"
-        
-            \"%temp%\\getadmin.vbs\"
-            del \"%temp%\\getadmin.vbs\"
-            exit /B
-        
-        :gotAdmin
-            pushd \"%CD%\"
-            CD /D \"%~dp0\"
-        :--------------------------------------
-        
-        powershell novus i %1
-        timeout /t 2").unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+        std::fs::write(path, AUTO_ELEVATE_INSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
     let loc = format!(r"{}\novus\scripts\auto_elevate_uninstall.bat", temp);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
-        std::fs::write(path, "@echo off
-
-        :: BatchGotAdmin
-        :-------------------------------------
-        REM  --> Check for permissions
-            IF \"%PROCESSOR_ARCHITECTURE%\" EQU \"amd64\" (
-        >nul 2>&1 \"%SYSTEMROOT%\\SysWOW64\\cacls.exe\" \"%SYSTEMROOT%\\SysWOW64\\config\\system\"
-        ) ELSE (
-        >nul 2>&1 \"%SYSTEMROOT%\\system32\\cacls.exe\" \"%SYSTEMROOT%\\system32\\config\\system\"
-        )
-        
-        REM --> If error flag set, we do not have admin.
-        if '%errorlevel%' NEQ '0' (
-            goto UACPrompt
-        ) else ( goto gotAdmin )
-        
-        :UACPrompt
-            echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%temp%\\getadmin.vbs\"
-            set params= %*
-            echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%temp%\\getadmin.vbs\"
-        
-            \"%temp%\\getadmin.vbs\"
-            del \"%temp%\\getadmin.vbs\"
-            exit /B
-        
-        :gotAdmin
-            pushd \"%CD%\"
-            CD /D \"%~dp0\"
-        :--------------------------------------
-        
-        powershell novus u %1
-        timeout /t 2").unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+        std::fs::write(path, AUTO_ELEVATE_UNINSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
 }
