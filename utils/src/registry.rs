@@ -7,7 +7,7 @@ pub fn get_startup_apps() -> Vec<String> {
     use winreg::enums::*;
     use winreg::RegKey;
 
-    let regkey = RegKey::predef(HKEY_CURRENT_USER);
+    let regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
 
     let path: RegKey = regkey
     .open_subkey(
