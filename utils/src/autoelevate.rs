@@ -12,3 +12,14 @@ pub fn autoelevateinstall(package_name: String, mut args: Vec<String>) -> i32 {
         .unwrap_or_else(|_| handle_error_and_exit("Failed to retrieve output".to_string()));
     output.status.code().unwrap()
 }
+
+pub fn autoelevateuninstall(args: Vec<&str>) -> i32 {
+    let batch_file = std::env::temp_dir().join(r"novus\scripts\auto_elevate_uninstall.bat");
+    // args.insert(0, uninstall_string);
+    // println!("args: {:?}", args);
+    let output = Command::new(batch_file)
+        .args(args)
+        .output()
+        .unwrap_or_else(|_| handle_error_and_exit("Failed to retrieve output".to_string()));
+    output.status.code().unwrap()
+}

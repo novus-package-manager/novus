@@ -1,11 +1,12 @@
 use utils::classes::package::Package;
-use utils::get_package;
+use utils::autoelevate::autoelevateuninstall;
 use utils::handle_error::handle_error_and_exit;
 use colored::Colorize;
 use utils::get_package::get_package;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::vec;
 use utils::classes::installed_packages::Packages;
+use std::process;
 
 pub async fn uninstaller(packages: Vec<String>) {
     let mut handles = vec![];
@@ -29,6 +30,7 @@ pub async fn uninstaller(packages: Vec<String>) {
         let pkg_clone = pkg.clone();
         let package: Package = get_package(pkg_clone.as_str()).await;
         let display_name = package.display_name;
+        let package_name = package.package_name;
         let uswitch = package.uswitches.clone();
         if multi == false {
             println!(
@@ -38,7 +40,7 @@ pub async fn uninstaller(packages: Vec<String>) {
             );
         }
         handles.push(std::thread::spawn(move || {
-            uninstall(display_name, uswitch);
+            uninstall(display_name, uswitch, package_name);
         }));
     }
     for handle in handles {
@@ -71,7 +73,7 @@ pub async fn uninstaller(packages: Vec<String>) {
 }
 
 #[allow(unused_assignments)]
-pub fn uninstall(display_name: String, uswitches: Vec<String>) {
+pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: String) {
     let mut uninstall_string = get_unins_string(display_name.clone());
 
     uninstall_string = uninstall_string.clone();
@@ -121,25 +123,56 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>) {
         }
     });
 
+    let mut output;
+
     if uninstall_string.starts_with("MsiExec.exe") {
         let mut msi_args = args.clone();
         msi_args.push("/passive");
-        let _cmd = std::process::Command::new(uninstall_string)
-        .args(msi_args)
-        .spawn()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
-        .wait_with_output()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        output = std::process::Command::new(uninstall_string.clone())
+        .args(msi_args).output();
     }
     else {
-        let _cmd = std::process::Command::new(uninstall_string)
-        .args(args)
-        .spawn()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
-        .wait_with_output()
-        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        output = std::process::Command::new(uninstall_string.clone())
+        .args(args.clone()).output();
     }
-    pb.finish_and_clear();
+
+    let mut code = 0;
+
+    let output = output.unwrap_or_else(|e| {
+        if e.to_string().contains("requires elevation") {            
+            args.insert(0, &package_name);
+            if uninstall_string.starts_with("MsiExec.exe") {
+                let mut msi_args = args.clone();
+                msi_args.push("/passive");
+                code = autoelevateuninstall(msi_args);
+            }
+            else {
+                code = autoelevateuninstall(args);
+            }
+            pb.finish_and_clear();
+            println!("{}", "Auto Elevating".bright_cyan());
+
+            process::exit(0)
+        } else {
+            handle_error_and_exit(e.to_string());
+        }
+    });
+
+    code = output
+        .status
+        .code()
+        .unwrap_or_else(|| handle_error_and_exit("Failed to retrieve exit code".to_string()));
+    if code == 1 {
+        let error_message = String::from_utf8(output.stderr)
+            .unwrap_or("Failed to uninstall packages".to_string());
+            pb.finish_and_clear();
+            println!("{}", error_message.bright_red());
+            process::exit(0);
+    } else {
+        pb.finish_and_clear();
+        println!("{}", "Successfully Uninstalled Packages".bright_purple());
+        process::exit(0);
+    }
 }
 
 pub fn get_unins_string(display_name: String) -> String {
