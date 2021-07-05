@@ -188,6 +188,39 @@ Options:
 }
 
 #[allow(unused)]
+pub fn startup_help() {
+    let startup = format!(
+        r#"
+Novus Package Manager {}
+
+Allows you to modify starup apps
+
+Usage: {} {} {} {}
+
+Commands: 
+  {} Lists all startup apps 
+  {} Adds an app to startup
+  {} Removes an app from startup
+
+Options: 
+  {} {} {} Displays help menu for a specific command"#,
+        format!("novus {}", __VERSION__.bright_green().bold()),
+        "novus".bright_green(),
+        "startup".bright_purple(),
+        "[command]".white(),
+        "[flags]".white(),
+        "list".bright_cyan(),
+        "add".bright_cyan(),
+        "remove".bright_cyan(),
+        "--help".bright_cyan(),
+        "(-h)".yellow(),
+        "(-?)".yellow(),
+    );
+    println!("{}", startup);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
 pub fn search_help() {
     let search = format!(
         r#"
@@ -325,6 +358,78 @@ Novus Package Manager {}
         "novus search --help".bright_green()
     );
     println!("{}", search_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn startup_error() {
+    let startup_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing command to manage startup
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus startup --help".bright_green()
+    );
+    println!("{}", startup_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn startup_command_error() {
+    let startup_command_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Invalid command
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus startup --help".bright_green()
+    );
+    println!("{}", startup_command_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn startup_add_error() {
+    let startup_command_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing package to add
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus startup add --help".bright_green()
+    );
+    println!("{}", startup_command_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn startup_remove_error() {
+    let startup_command_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing package to remove
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus startup remove --help".bright_green()
+    );
+    println!("{}", startup_command_error);
     std::process::exit(0);
 }
 

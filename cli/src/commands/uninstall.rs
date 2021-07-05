@@ -123,7 +123,7 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
         }
     });
 
-    let mut output;
+    let output;
 
     if uninstall_string.starts_with("MsiExec.exe") {
         let mut msi_args = args.clone();

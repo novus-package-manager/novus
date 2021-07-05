@@ -1,5 +1,5 @@
 #[allow(unused)]
-pub const COMMANDS: [[&str; 2]; 10] = [
+pub const COMMANDS: [[&str; 2]; 11] = [
   ["install", "i"],
   ["uninstall", "u"],
   ["update", "updgrade"],
@@ -10,10 +10,11 @@ pub const COMMANDS: [[&str; 2]; 10] = [
   ["quit", "exit"],
   ["forcequit", "forcequit"],
   ["info", "details"],
+  ["startup", "startup"],
 ];
 
 #[allow(unused)]
-pub const ALL_COMMANDS: [&str; 18] = [
+pub const ALL_COMMANDS: [&str; 19] = [
   "install",
   "i",
   "uninstall",
@@ -32,6 +33,7 @@ pub const ALL_COMMANDS: [&str; 18] = [
   "forcequit",
   "info",
   "details",
+  "startup",
 ];
 
 #[allow(unused)]
@@ -40,18 +42,18 @@ pub const INSTALL_FLAGS: [[&str; 2]; 8] = [
   ["--debug", "-d"],
   ["--no-progress", "-np"],
   ["--no-color", "-nc"],
-  ["--log-output", "-lo"],
   ["--virus-check", "-vc"],
   ["--yes", "-y"],
-  ["--silent", "-s"],
+  ["--single-threaded", "-s"],
+  ["--no-cache", "--no-cache"],
 ];
 
 #[allow(unused)]
 pub const UNINSTALL_FLAGS: [[&str; 2]; 7] = [
   ["--verbose", "-v"],
   ["--debug", "-d"],
+  ["--no-progress", "-np"],
   ["--no-color", "-nc"],
-  ["--log-output", "-lg"],
   ["--yes", "-y"],
   ["--silent", "-s"],
   ["--no-cache", "--no-cache"],

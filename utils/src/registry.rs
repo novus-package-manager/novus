@@ -3,6 +3,28 @@ use crate::classes::local_package_info::LocalPackageInfo;
 
 use colored::Colorize;
 
+pub fn get_startup_apps() -> Vec<String> {
+    use winreg::enums::*;
+    use winreg::RegKey;
+
+    let regkey = RegKey::predef(HKEY_CURRENT_USER);
+
+    let path: RegKey = regkey
+    .open_subkey(
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+    )
+    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    let mut apps: Vec<String> = vec![];
+
+    for (name, _val) in path.enum_values().map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string()))) {
+        // println!("name: {}", name);
+        apps.push(name);
+    }
+
+    apps
+}
+
 pub fn get_local_info(package_name: String) -> LocalPackageInfo {
     use winreg::enums::*;
     use winreg::RegKey;

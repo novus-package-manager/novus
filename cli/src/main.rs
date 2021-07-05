@@ -1,6 +1,6 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, uninstall};
+use commands::{clean, info, install, list, quit, search, uninstall, startup};
 use display_help::display_help;
 
 use clean::clean;
@@ -9,6 +9,7 @@ use handle_args::{get_arguments, verify_args};
 use info::info;
 use install::installer;
 use list::list;
+use startup::startup;
 use quit::quit;
 use search::search;
 use serde_json::Value;
@@ -98,6 +99,9 @@ async fn main() {
         }
         "info" => {
             info(args, package_list).await;
+        }
+        "startup" => {
+            startup(args, flags).await;
         }
         &_ => {}
     }
