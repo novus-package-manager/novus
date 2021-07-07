@@ -92,12 +92,12 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
             .file_type
             .clone();
         let iswitch = package.iswitches.clone();
-        let temp = std::env::var("TEMP")
+        let appdata = std::env::var("APPDATA")
             .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:110", e.to_string())));
         let package_name = package.package_name;
         let loc = format!(
             r"{}\novus\{}@{}{}",
-            temp, package_name, desired_version, file_type
+            appdata, package_name, desired_version, file_type
         );
         if package.versions[&desired_version.to_string()].size != max_size {
             max = false;
@@ -178,8 +178,8 @@ fn get_splits(i: u64, total_length: u64, threads: u64) -> (u64, u64) {
 }
 
 fn check_installed(package_name: &str, version: &str, no_color: bool, confirm: bool) {
-    let temp = std::env::var("TEMP").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let appdata = std::env::var("APPDATA").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", appdata);
     let path = std::path::Path::new(loc.as_str());
     let package_version = package_name.to_string() + "@" + version;
     if path.exists() {
@@ -287,7 +287,7 @@ pub async fn threadeddownload(
     let total_length = res
         .content_length()
         .unwrap_or_else(|| handle_error_and_exit("An Unexpected Error Occured!".to_string()));
-    let temp = std::env::var("TEMP")
+    let appdata = std::env::var("APPDATA")
         .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:106", e.to_string())));
 
     if max {
@@ -307,7 +307,7 @@ pub async fn threadeddownload(
         }
 
         for index in 0..threads {
-            let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+            let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let pb = progress_bar.clone();
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
@@ -339,7 +339,7 @@ pub async fn threadeddownload(
         progress_bar.finish();
     } else {
         for index in 0..threads {
-            let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+            let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
                 handle_error_and_exit(format!("{} install.rs:150", e.to_string()))
@@ -369,10 +369,10 @@ pub async fn threadeddownload(
     let mut file = File::create(output.clone())
         .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:175", e.to_string())));
 
-    let temp = std::env::var("TEMP").unwrap();
+    let appdata = std::env::var("APPDATA").unwrap();
 
     for index in 0..threads {
-        let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+        let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file = File::open(loc.clone())
             .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:183", e.to_string())));
@@ -509,8 +509,8 @@ fn install_fail(no_color: bool, msg: &str, pb: ProgressBar) {
 }
 
 fn install_success(no_color: bool, mut packages_version: Vec<String>, pb: ProgressBar) {
-    let temp = std::env::var("TEMP").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let appdata = std::env::var("APPDATA").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", appdata);
     let path = std::path::Path::new(loc.as_str());
 
     if path.exists() {

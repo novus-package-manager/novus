@@ -48,8 +48,8 @@ pub async fn uninstaller(packages: Vec<String>) {
             .join()
             .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string()));
     }
-    let temp = std::env::var("TEMP").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", temp);
+    let appdata = std::env::var("APPDATA").unwrap();
+    let loc = format!(r"{}\novus\config\installed.json", appdata);
     let path = std::path::Path::new(loc.as_str());
     if path.exists() {
         let contents = std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));

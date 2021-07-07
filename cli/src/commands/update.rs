@@ -37,11 +37,11 @@ pub async fn updater(packages: Vec<String>) {
         let url = package.versions[&latest_version].url.clone();
         let file_type = package.versions[&latest_version].file_type.clone();
         let iswitch = package.iswitches.clone();
-        let temp = std::env::var("TEMP").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let appdata = std::env::var("APPDATA").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let package_name = package.package_name;
         let loc = format!(
             r"{}\novus\{}@{}{}",
-            temp, package_name, latest_version, file_type
+            appdata, package_name, latest_version, file_type
         );
         if package.versions[&latest_version].size != max_size {
             max = false;
@@ -100,7 +100,7 @@ pub async fn threadeddownload(
     let mut handles = vec![];
     let res = reqwest::get(url.to_string()).await.unwrap();
     let total_length = res.content_length().unwrap();
-    let temp = std::env::var("TEMP").unwrap();
+    let appdata = std::env::var("APPDATA").unwrap();
 
     if !multi {
         println!("{}", format!("Installing {}", display_name))
@@ -112,7 +112,7 @@ pub async fn threadeddownload(
               .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({eta})")
               .progress_chars("#>-"));
         for index in 0..threads {
-            let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+            let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let pb = progress_bar.clone();
             let mut file = BufWriter::new(File::create(loc).unwrap());
@@ -135,7 +135,7 @@ pub async fn threadeddownload(
         progress_bar.finish();
     } else {
         for index in 0..threads {
-            let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+            let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let mut file = BufWriter::new(File::create(loc).unwrap());
             let url = url.clone();
@@ -158,7 +158,7 @@ pub async fn threadeddownload(
     let mut file = File::create(output.clone()).unwrap();
 
     for index in 0..threads {
-        let loc = format!(r"{}\novus\setup_{}{}.tmp", temp, package_name, index + 1);
+        let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file = File::open(loc).unwrap();
         let mut reader = BufReader::new(downloaded_file);

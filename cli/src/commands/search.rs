@@ -29,8 +29,8 @@ pub async fn search(packages: Vec<&str>, flags: Vec<String>, package: &str) {
     let mut revised_packages: Vec<&str> = vec![];
 
     if installed {
-        let temp = std::env::var("TEMP").unwrap();
-        let loc = format!(r"{}\novus\config\installed.json", temp);
+        let appdata = std::env::var("APPDATA").unwrap();
+        let loc = format!(r"{}\novus\config\installed.json", appdata);
         let path = std::path::Path::new(loc.as_str());
         let contents =
             std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));

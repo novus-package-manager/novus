@@ -108,28 +108,28 @@ async fn main() {
 }
 
 fn create_dirs() {
-    let temp = std::env::var("TEMP").unwrap();
-    let loc = format!(r"{}\novus\", temp);
+    let appdata = std::env::var("APPDATA").unwrap();
+    let loc = format!(r"{}\novus\", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);
     }
-    let loc = format!(r"{}\novus\config", temp);
+    let loc = format!(r"{}\novus\config", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);
     }
-    let loc = format!(r"{}\novus\scripts", temp);
+    let loc = format!(r"{}\novus\scripts", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);
     }
-    let loc = format!(r"{}\novus\scripts\auto_elevate_install.bat", temp);
+    let loc = format!(r"{}\novus\scripts\auto_elevate_install.bat", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         std::fs::write(path, AUTO_ELEVATE_INSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
-    let loc = format!(r"{}\novus\scripts\auto_elevate_uninstall.bat", temp);
+    let loc = format!(r"{}\novus\scripts\auto_elevate_uninstall.bat", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         std::fs::write(path, AUTO_ELEVATE_UNINSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));

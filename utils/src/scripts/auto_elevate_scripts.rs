@@ -16,12 +16,12 @@ if '%errorlevel%' NEQ '0' (
 ) else ( goto gotAdmin )
 
 :UACPrompt
-    echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%temp%\\getadmin.vbs\"
+    echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%appdata%\\getadmin.vbs\"
     set params= %*
-    echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%temp%\\getadmin.vbs\"
+    echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%appdata%\\getadmin.vbs\"
 
-    \"%temp%\\getadmin.vbs\"
-    del \"%temp%\\getadmin.vbs\"
+    \"%appdata%\\getadmin.vbs\"
+    del \"%appdata%\\getadmin.vbs\"
     exit /B
 
 :gotAdmin
@@ -50,12 +50,12 @@ if '%errorlevel%' NEQ '0' (
 ) else ( goto gotAdmin )
 
 :UACPrompt
-    echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%temp%\\getadmin.vbs\"
+    echo Set UAC = CreateObject^(\"Shell.Application\"^) > \"%appdata%\\getadmin.vbs\"
     set params= %*
-    echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%temp%\\getadmin.vbs\"
+    echo UAC.ShellExecute \"cmd.exe\", \"/c \"\"%~s0\"\" %params:\"=\"\"%\", \"\", \"runas\", 1 >> \"%appdata%\\getadmin.vbs\"
 
-    \"%temp%\\getadmin.vbs\"
-    del \"%temp%\\getadmin.vbs\"
+    \"%appdata%\\getadmin.vbs\"
+    del \"%appdata%\\getadmin.vbs\"
     exit /B
 
 :gotAdmin

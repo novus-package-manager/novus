@@ -25,8 +25,8 @@ pub async fn list(packages: Vec<&str>, flags: Vec<String>, args: Vec<String>) {
         __VERSION__.bright_green().bold()
     );
     if installed {
-        let temp = std::env::var("TEMP").unwrap();
-        let loc = format!(r"{}\novus\config\installed.json", temp);
+        let appdata = std::env::var("APPDATA").unwrap();
+        let loc = format!(r"{}\novus\config\installed.json", appdata);
         let path = std::path::Path::new(loc.as_str());
         let contents =
             std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
