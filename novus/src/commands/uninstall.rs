@@ -1,12 +1,12 @@
-use utils::classes::package::Package;
-use utils::autoelevate::autoelevateuninstall;
-use utils::handle_error::handle_error_and_exit;
 use colored::Colorize;
-use utils::get_package::get_package;
 use indicatif::{ProgressBar, ProgressStyle};
-use std::vec;
-use utils::classes::installed_packages::Packages;
 use std::process;
+use std::vec;
+use utils::autoelevate::autoelevateuninstall;
+use utils::classes::installed_packages::Packages;
+use utils::classes::package::Package;
+use utils::get_package::get_package;
+use utils::handle_error::handle_error_and_exit;
 
 pub async fn uninstaller(packages: Vec<String>) {
     let mut handles = vec![];
@@ -52,21 +52,27 @@ pub async fn uninstaller(packages: Vec<String>) {
     let loc = format!(r"{}\novus\config\installed.json", appdata);
     let path = std::path::Path::new(loc.as_str());
     if path.exists() {
-        let contents = std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let contents =
+            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let mut installed_packages = json.clone().packages;
         for package in packages {
             for installed_package in installed_packages.clone() {
                 if installed_package.starts_with(&package) {
-                    let index = installed_packages.iter().position(|x| *x == installed_package).unwrap();
-                    installed_packages.remove(index);                  
+                    let index = installed_packages
+                        .iter()
+                        .position(|x| *x == installed_package)
+                        .unwrap();
+                    installed_packages.remove(index);
                 }
             }
         }
         let installed_packages: Packages = Packages {
-            packages: installed_packages
+            packages: installed_packages,
         };
-        let file = std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let file =
+            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         serde_json::to_writer_pretty(file, &installed_packages).unwrap();
     }
     println!("{}", "Successfully uninstalled packages".bright_magenta());
@@ -129,26 +135,19 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
         let mut msi_args = args.clone();
         msi_args.push("/passive");
         output = std::process::Command::new(uninstall_string.clone())
-        .args(msi_args).output();
-    }
-    else {
+            .args(msi_args)
+            .output();
+    } else {
         output = std::process::Command::new(uninstall_string.clone())
-        .args(args.clone()).output();
+            .args(args.clone())
+            .output();
     }
 
     let mut code = 0;
 
     let output = output.unwrap_or_else(|e| {
-        if e.to_string().contains("requires elevation") {            
-            args.insert(0, &package_name);
-            if uninstall_string.starts_with("MsiExec.exe") {
-                let mut msi_args = args.clone();
-                msi_args.push("/passive");
-                code = autoelevateuninstall(msi_args);
-            }
-            else {
-                code = autoelevateuninstall(args);
-            }
+        if e.to_string().contains("requires elevation") {
+            code = autoelevateuninstall(package_name);
             pb.finish_and_clear();
             println!("{}", "Auto Elevating".bright_cyan());
 
@@ -163,11 +162,11 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
         .code()
         .unwrap_or_else(|| handle_error_and_exit("Failed to retrieve exit code".to_string()));
     if code == 1 {
-        let error_message = String::from_utf8(output.stderr)
-            .unwrap_or("Failed to uninstall packages".to_string());
-            pb.finish_and_clear();
-            println!("{}", error_message.bright_red());
-            process::exit(0);
+        let error_message =
+            String::from_utf8(output.stderr).unwrap_or("Failed to uninstall packages".to_string());
+        pb.finish_and_clear();
+        println!("{}", error_message.bright_red());
+        process::exit(0);
     } else {
         pb.finish_and_clear();
         println!("{}", "Successfully Uninstalled Packages".bright_purple());
@@ -243,12 +242,23 @@ pub fn get_unins_string(display_name: String) -> String {
     }
 
     if uninstall_string == "NULL".to_string() {
-        let path: RegKey = regkey.open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let path: RegKey = regkey
+            .open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         for name in path
             .enum_keys()
             .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
         {
-            let unins_path: RegKey = regkey.open_subkey(format!("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}", name)).unwrap_or(regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string())));
+            let unins_path: RegKey = regkey
+                .open_subkey(format!(
+                    "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
+                    name
+                ))
+                .unwrap_or(
+                    regkey
+                        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                        .unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
+                );
             let app_name: String = unins_path
                 .get_value("DisplayName")
                 .unwrap_or("NULL".to_string());

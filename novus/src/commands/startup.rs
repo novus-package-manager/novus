@@ -1,11 +1,9 @@
 use colored::Colorize;
-use utils::constants::version::__VERSION__;
-use utils::handle_error::handle_error_and_exit;
-use utils::constants::help_menu::{startup_command_error, startup_remove_error, startup_add_error};
+use utils::constants::help_menu::{startup_add_error, startup_command_error, startup_remove_error};
 use utils::registry::get_startup_apps;
 
-pub async fn startup(args: Vec<String>, flags: Vec<String>) {
-    let (command, package_name) = parse_args(args);
+pub async fn startup(args: Vec<String>, _flags: Vec<String>) {
+    let (command, _package_name) = parse_args(args);
 
     // Handle list command
     if command == "list" {
@@ -16,11 +14,7 @@ pub async fn startup(args: Vec<String>, flags: Vec<String>) {
     }
 }
 
-const COMMANDS: [&str; 3] = [
-  "list",
-  "add",
-  "remove",
-];
+const COMMANDS: [&str; 3] = ["list", "add", "remove"];
 
 fn parse_args(args: Vec<String>) -> (String, String) {
     let command = &args[2];
@@ -34,15 +28,13 @@ fn parse_args(args: Vec<String>) -> (String, String) {
         if args.len() <= 3 {
             if command == "add" {
                 startup_add_error();
-            }
-            else {
+            } else {
                 startup_remove_error();
             }
-        }
-        else {
+        } else {
             package_name = &args[3];
         }
-    } 
+    }
 
     (command.to_owned(), package_name.to_string())
 }

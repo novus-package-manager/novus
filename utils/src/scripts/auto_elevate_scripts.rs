@@ -29,7 +29,7 @@ if '%errorlevel%' NEQ '0' (
     CD /D \"%~dp0\"
 :--------------------------------------
 
-powershell novus i %1
+powershell novus i %1 -y
 timeout /t 2";
 
 pub const AUTO_ELEVATE_UNINSTALL: &str = "
@@ -63,7 +63,7 @@ if '%errorlevel%' NEQ '0' (
     CD /D \"%~dp0\"
 :--------------------------------------
 
-powershell novus u %1
+powershell novus u %1 -y
 timeout /t 2";
 
 // SOURCE: https://stackoverflow.com/questions/11525056/how-to-create-a-batch-file-to-run-cmd-as-administrator

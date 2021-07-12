@@ -467,7 +467,7 @@ pub async fn install(
 
         let output = output.unwrap_or_else(|e| {
             if e.to_string().contains("requires elevation") {
-                code = autoelevateinstall(package_name, switch);
+                code = autoelevateinstall(package_name);
                 if no_color {
                     pb.println("Auto Elevating");
                 } else {

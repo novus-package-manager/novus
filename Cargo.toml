@@ -27,6 +27,6 @@
 # winapi = { version = "0.3", features = ["winuser"] }
 [workspace]
 members = [
-	"cli",
+	"novus",
 	"utils"
 ]

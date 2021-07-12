@@ -108,7 +108,7 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
     Check: NeedsAddPath('C:\Program Files (x86)\{#MyAppName}')
     
 [Files]
-Source: "D:\prana\Programming\My Projects\novus-package-manager\novus\target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\prana\Programming\My Projects\novus-package-manager\novus\target\release\novus.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
