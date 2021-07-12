@@ -1,32 +1,35 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, uninstall, startup};
+use commands::{clean, info, install, list, quit, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
-use utils::constants::commands::COMMANDS;
 use handle_args::{get_arguments, verify_args};
 use info::info;
 use install::installer;
 use list::list;
-use startup::startup;
 use quit::quit;
 use search::search;
 use serde_json::Value;
+// use startup::startup;
+use std::time::Instant;
 use uninstall::uninstaller;
-use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
+use utils::constants::commands::COMMANDS;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
-// use std::time::Instant;
+use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
 
 #[allow(unused)]
 #[tokio::main]
 async fn main() {
     let _enabled = ansi_term::enable_ansi_support();
 
+    // Starts a timer
+    let start = Instant::now();
+
     create_dirs();
 
     ctrlc::set_handler(move || {
-        println!("\n{}", "Aborted!".bright_blue());
+        println!("\n{}", "Aborted!".bright_cyan());
         std::process::exit(0);
     })
     .expect("Error setting Ctrl-C handler");
@@ -72,15 +75,17 @@ async fn main() {
         package_list.clone(),
     );
 
+    let mut code = 0;
+
     match command {
         "install" => {
             installer(packages, flags).await;
         }
         "uninstall" => {
-            uninstaller(packages).await;
+            code = uninstaller(packages).await;
         }
         "update" => {
-            installer(packages, flags).await;
+            code = installer(packages, flags).await;
         }
         "list" => {
             list(package_list, flags, args).await;
@@ -100,11 +105,19 @@ async fn main() {
         "info" => {
             info(args, package_list).await;
         }
-        "startup" => {
-            startup(args, flags).await;
-        }
+        // "startup" => {
+        //     startup(args, flags).await;
+        // }
         &_ => {}
     }
+
+    println!(
+        "Completed in {}.{:.*}s",
+        start.elapsed().as_secs(),
+        2,
+        start.elapsed().as_millis().to_string(),
+    );
+    std::process::exit(0)
 }
 
 fn create_dirs() {
@@ -127,11 +140,13 @@ fn create_dirs() {
     let loc = format!(r"{}\novus\scripts\auto_elevate_install.bat", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
-        std::fs::write(path, AUTO_ELEVATE_INSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+        std::fs::write(path, AUTO_ELEVATE_INSTALL)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
     let loc = format!(r"{}\novus\scripts\auto_elevate_uninstall.bat", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
-        std::fs::write(path, AUTO_ELEVATE_UNINSTALL).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+        std::fs::write(path, AUTO_ELEVATE_UNINSTALL)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
 }

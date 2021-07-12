@@ -6,15 +6,18 @@ use crate::handle_error::handle_error_and_exit;
 #[allow(unused)]
 pub fn check_cache(package_name: String, version: String, file_type: String) -> bool {
     let appdata = std::env::var("APPDATA").unwrap();
-    let loc = format!(r"{}\novus\{}@{}{}", appdata, package_name, version, file_type);
+    let loc = format!(
+        r"{}\novus\{}@{}{}",
+        appdata, package_name, version, file_type
+    );
     let path = Path::new(loc.as_str());
     path.exists()
 }
 
 pub fn clear_cache() {
-    let appdata = std::env::var("APPDATA")    
-        .unwrap_or_else(|_| handle_error_and_exit("Failed to locate Appdata directory".to_string()));
-        println!("appdata: {:?}", appdata);
+    let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate Appdata directory".to_string())
+    });
     let loc = format!("{}/novus", appdata);
     let novus_dir = Path::new(&loc);
     if novus_dir.exists() {
@@ -23,8 +26,9 @@ pub fn clear_cache() {
 }
 
 pub fn clear_cache_for_package(package: &str) {
-    let appdata = std::env::var("APPDATA")
-        .unwrap_or_else(|_| handle_error_and_exit("Failed to locate Appdata directory".to_string()));
+    let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate Appdata directory".to_string())
+    });
     let loc = format!("{}/novus", appdata);
     let novus_dir = Path::new(&loc);
     for file in fs::read_dir(novus_dir).unwrap() {

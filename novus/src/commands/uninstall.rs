@@ -3,12 +3,11 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::process;
 use std::vec;
 use utils::autoelevate::autoelevateuninstall;
-use utils::classes::installed_packages::Packages;
 use utils::classes::package::Package;
 use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
 
-pub async fn uninstaller(packages: Vec<String>) {
+pub async fn uninstaller(packages: Vec<String>) -> i32 {
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
@@ -40,46 +39,30 @@ pub async fn uninstaller(packages: Vec<String>) {
             );
         }
         handles.push(std::thread::spawn(move || {
-            uninstall(display_name, uswitch, package_name);
+            let code: i32 = uninstall(display_name, uswitch, package_name);
+            code
         }));
     }
+
+    let mut codes: Vec<i32> = vec![];
+
     for handle in handles {
-        handle
-            .join()
-            .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string()));
+        codes.push(
+            handle
+                .join()
+                .unwrap_or_else(|_| handle_error_and_exit("An error occured!".to_string())),
+        );
     }
-    let appdata = std::env::var("APPDATA").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", appdata);
-    let path = std::path::Path::new(loc.as_str());
-    if path.exists() {
-        let contents =
-            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let mut installed_packages = json.clone().packages;
-        for package in packages {
-            for installed_package in installed_packages.clone() {
-                if installed_package.starts_with(&package) {
-                    let index = installed_packages
-                        .iter()
-                        .position(|x| *x == installed_package)
-                        .unwrap();
-                    installed_packages.remove(index);
-                }
-            }
-        }
-        let installed_packages: Packages = Packages {
-            packages: installed_packages,
-        };
-        let file =
-            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
+
+    if codes.contains(&1) {
+        return 1;
     }
-    println!("{}", "Successfully uninstalled packages".bright_magenta());
+
+    0
 }
 
 #[allow(unused_assignments)]
-pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: String) {
+pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: String) -> i32 {
     let mut uninstall_string = get_unins_string(display_name.clone());
 
     uninstall_string = uninstall_string.clone();
@@ -170,8 +153,9 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
     } else {
         pb.finish_and_clear();
         println!("{}", "Successfully Uninstalled Packages".bright_purple());
-        process::exit(0);
     }
+
+    code
 }
 
 pub fn get_unins_string(display_name: String) -> String {

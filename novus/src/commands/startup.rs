@@ -2,6 +2,7 @@ use colored::Colorize;
 use utils::constants::help_menu::{startup_add_error, startup_command_error, startup_remove_error};
 use utils::registry::get_startup_apps;
 
+#[allow(unused)]
 pub async fn startup(args: Vec<String>, _flags: Vec<String>) {
     let (command, _package_name) = parse_args(args);
 

@@ -10,24 +10,19 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{fs::File, u64};
 use utils::autoelevate::autoelevateinstall;
-use utils::classes::installed_packages::Packages;
 use utils::classes::package::Package;
 use utils::{cache, checksum, get_package, handle_error};
 // use std::time::Instant;
 
-pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
+pub async fn installer(packages: Vec<String>, flags: Vec<String>) -> i32 {
     let mut no_progress = false;
     let mut no_color = false;
-    let mut confirm = false;
     let mut packages_version: Vec<String> = vec![];
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
     if flags.contains(&"--no-progress".to_string()) || flags.contains(&"-np".to_string()) {
         no_progress = true;
-    }
-    if flags.contains(&"--yes".to_string()) || flags.contains(&"-y".to_string()) {
-        confirm = true;
     }
     let mut handles = vec![];
     let mut sizes = vec![];
@@ -57,7 +52,6 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         println!("{}", "Installing Packages".bright_green());
     }
 
-    // let start = std::time::Instant::now();
     for pkg in packages.iter() {
         let mut max = true;
         let pkg_split: Vec<&str> = pkg.split("@").collect();
@@ -73,7 +67,6 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         if desired_version == "0" {
             desired_version = latest_version.as_str();
         }
-        check_installed(pkg_name, desired_version, no_color, confirm);
         let package_ver = pkg.to_string() + "@" + desired_version;
         packages_version.push(package_ver);
         let display_name = package.display_name;
@@ -110,7 +103,6 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
         if no_progress {
             max = false
         }
-        let package_versions = packages_version.clone();
         handles.push(tokio::spawn(async move {
             if !exists {
                 threadeddownload(
@@ -144,7 +136,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                     process::exit(1);
                 }
             }
-            install(
+            let code: i32 = install(
                 &iswitch,
                 loc.clone(),
                 display_name,
@@ -152,13 +144,28 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) {
                 multi,
                 no_color,
                 file_type,
-                package_versions.clone(),
             )
             .await;
+
+            code
         }));
     }
 
-    futures::future::join_all(handles).await;
+    let code_arr = futures::future::join_all(handles).await;
+    let mut codes: Vec<i32> = vec![];
+    for code_element in code_arr {
+        codes.push(
+            code_element.unwrap_or_else(|_| {
+                handle_error_and_exit("Failed to retrieve exit code".to_string())
+            }),
+        )
+    }
+
+    if codes.contains(&1) {
+        return 1;
+    }
+
+    0
 }
 
 #[allow(unused)]
@@ -177,100 +184,6 @@ fn get_splits(i: u64, total_length: u64, threads: u64) -> (u64, u64) {
     (start, end)
 }
 
-fn check_installed(package_name: &str, version: &str, no_color: bool, confirm: bool) {
-    let appdata = std::env::var("APPDATA").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", appdata);
-    let path = std::path::Path::new(loc.as_str());
-    let package_version = package_name.to_string() + "@" + version;
-    if path.exists() {
-        let contents =
-            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let installed_packages = json.clone().packages;
-
-        if installed_packages.contains(&package_version) {
-            if !confirm {
-                if no_color {
-                    println!(
-                        "{}{}{}",
-                        "This version of ", package_name, " already exists on your system."
-                    );
-                } else {
-                    println!(
-                        "{}{}{}",
-                        "This version of ",
-                        package_name.bright_cyan(),
-                        " already exists on your system."
-                    );
-                }
-                print!("Do you want to reinstall {} (Y/N): ", package_name);
-                std::io::stdout()
-                    .flush()
-                    .ok()
-                    .expect("Could not flush stdout");
-                let mut string: String = String::new();
-                let _ = std::io::stdin().read_line(&mut string);
-                if string.trim().to_lowercase() != "y" {
-                    process::exit(0);
-                }
-            }
-        }
-
-        for installed_package in installed_packages {
-            let installed_packages_split: Vec<&str> = installed_package.split("@").collect();
-            let installed_name = installed_packages_split[0];
-            let installed_version = installed_packages_split[1];
-            if package_name == installed_name {
-                let installed_version_split: Vec<&str> = installed_version.split(".").collect();
-                let version_split: Vec<&str> = version.split(".").collect();
-                let version_num: u64 = version_split
-                    .into_iter()
-                    .collect::<String>()
-                    .parse::<u64>()
-                    .unwrap();
-                let installed_version_num: u64 = installed_version_split
-                    .into_iter()
-                    .collect::<String>()
-                    .parse::<u64>()
-                    .unwrap();
-                if installed_version_num > version_num {
-                    if !confirm {
-                        if no_color {
-                            println!(
-                                "{}{}{}",
-                                "A later version of ",
-                                package_name,
-                                " is already installed on your system."
-                            );
-                        } else {
-                            println!(
-                                "{}{}{}",
-                                "A later version of ",
-                                package_name.bright_cyan(),
-                                " is already installed on your system."
-                            );
-                        }
-                        print!(
-                            "Do you want to reinstall an older of {} (Y/N): ",
-                            package_name
-                        );
-                        std::io::stdout()
-                            .flush()
-                            .ok()
-                            .expect("Could not flush stdout");
-                        let mut string: String = String::new();
-                        let _ = std::io::stdin().read_line(&mut string);
-                        if string.trim().to_lowercase() != "y" {
-                            process::exit(0);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 pub async fn threadeddownload(
     url: String,
     output: String,
@@ -279,7 +192,6 @@ pub async fn threadeddownload(
     max: bool,
     no_color: bool,
 ) {
-    // let start = Instant::now();
     let mut handles = vec![];
     let res = reqwest::get(url.to_string())
         .await
@@ -381,8 +293,6 @@ pub async fn threadeddownload(
         let _ = file.write_all(&buf);
         let _ = std::fs::remove_file(loc);
     }
-
-    // println!("download time: {:?}", start.elapsed());
 }
 
 #[allow(unused)]
@@ -394,8 +304,7 @@ pub async fn install(
     multi: bool,
     no_color: bool,
     file_type: String,
-    packages_version: Vec<String>,
-) {
+) -> i32 {
     let progress_bar = ProgressBar::new(0);
     let pb = progress_bar.clone();
     let completed = Arc::new(AtomicBool::new(false));
@@ -489,13 +398,17 @@ pub async fn install(
                 .unwrap_or("Failed to install packages".to_string());
             install_fail(no_color, &error_message, pb);
         } else {
-            install_success(no_color, packages_version, pb);
+            install_success(no_color, pb);
         }
+
+        code
     });
 
-    let _ = cmd.await;
+    let code = cmd.await;
     completed.store(true, Ordering::Relaxed);
     let _ = handle.await;
+
+    code.unwrap_or_else(|_| handle_error_and_exit("Failed to retrieve exit code".to_string()))
 }
 
 fn install_fail(no_color: bool, msg: &str, pb: ProgressBar) {
@@ -508,33 +421,7 @@ fn install_fail(no_color: bool, msg: &str, pb: ProgressBar) {
     process::exit(0);
 }
 
-fn install_success(no_color: bool, mut packages_version: Vec<String>, pb: ProgressBar) {
-    let appdata = std::env::var("APPDATA").unwrap();
-    let loc = format!(r"{}\novus\config\installed.json", appdata);
-    let path = std::path::Path::new(loc.as_str());
-
-    if path.exists() {
-        let contents =
-            std::fs::read_to_string(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let json: Packages = serde_json::from_str::<Packages>(contents.as_str())
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        let mut installed_packages = json.clone().packages;
-        installed_packages.append(&mut packages_version);
-        let installed_packages: Packages = Packages {
-            packages: installed_packages,
-        };
-        let file =
-            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
-    } else {
-        let installed_packages: Packages = Packages {
-            packages: packages_version,
-        };
-        let file =
-            std::fs::File::create(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        serde_json::to_writer_pretty(file, &installed_packages).unwrap();
-    }
-
+fn install_success(no_color: bool, pb: ProgressBar) {
     if no_color {
         pb.println("Successfully installed packages");
     } else {
@@ -544,5 +431,4 @@ fn install_success(no_color: bool, mut packages_version: Vec<String>, pb: Progre
         ));
     }
     pb.finish_and_clear();
-    process::exit(0)
 }
