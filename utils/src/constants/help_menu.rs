@@ -17,6 +17,9 @@ Commands:
   {} {} {} Lists all packages.
   {} {} {} Searches for packages.  
   {} {} {} Provides information on a specific package.
+  {} {} {} Clears all cache.
+  {} {} {} Quits an application or a list of applications.
+  {} {} {} Forcequits an application or a list of applications.
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -40,6 +43,15 @@ Run {} for more info about each command."#,
         "*".bright_magenta().bold(),
         "info".bright_cyan(),
         "(details)".yellow(),
+        "*".bright_magenta().bold(),
+        "clean".bright_cyan(),
+        "(clear)".yellow(),
+        "*".bright_magenta().bold(),
+        "quit".bright_cyan(),
+        "(exit)".yellow(),
+        "*".bright_magenta().bold(),
+        "forcequit".bright_cyan(),
+        "(forcequit)".yellow(),
         "novus [command] --help".bright_green(),
     );
 
@@ -49,7 +61,7 @@ Run {} for more info about each command."#,
 
 #[allow(unused)]
 pub fn install_help() {
-    let init = format!(
+    let install = format!(
         r#"
 Novus Package Manager {}
 
@@ -59,9 +71,9 @@ Usage: {} {} {} {}
     
 Options:
     
-  {} {} Disable colored output for installation.  
+  {} {} Disables colored output for installation.  
   {} {} Disables progress bar for installation.
-  {} {} Output verbose messages on internal operations."#,
+  {} {} Displays verbose for installation."#,
         __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "install".bright_purple(),
@@ -74,13 +86,13 @@ Options:
         "--verbose".bright_cyan(),
         "(-v)".yellow(),
     );
-    println!("{}", init);
+    println!("{}", install);
     std::process::exit(0);
 }
 
 #[allow(unused)]
 pub fn uninstall_help() {
-    let install = format!(
+    let uninstall = format!(
         r#"
 Novus Package Manager {}
     
@@ -90,19 +102,22 @@ Usage: {} {} {} {}
     
 Options: 
     
-  {} {} Disables progress bar for installation.
-  {} {} Output verbose messages on internal operations."#,
+  {} {} Disables colored output for uninstallation.  
+  {} {} Disables progress bar for uninstallation.
+  {} {} Displays verbose for uninstallation."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "uninstall".bright_purple(),
         "[package]".white(),
         "[flags]".white(),
+        "--no-color".bright_cyan(),
+        "(-nc)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
         "--verbose".bright_cyan(),
         "(-v)".yellow()
     );
-    println!("{}", install);
+    println!("{}", uninstall);
     std::process::exit(0);
 }
 
@@ -118,13 +133,16 @@ Usage: {} {} {} {}
 
 Options: 
     
-  {} {} Disables progress bar for installation.
-  {} {} Output verbose messages on internal operations."#,
+  {} {} Disables colored output while updating.
+  {} {} Disables progress bar while updating.
+  {} {} Displays verbose while updating."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "add".bright_purple(),
         "[packages]".white(),
         "[flags]".white(),
+        "--no-color".bright_cyan(),
+        "(-nc)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
         "--verbose".bright_cyan(),
@@ -142,24 +160,24 @@ Novus Package Manager {}
 
 List all packages available.
 
-Usage: {} {}
+Usage: {} {} [number]
 
 Options: 
-  {} {} Displays all packages available
-  {} {} Displays only installed packages
-  {} {} Displays only local packages
-  {} {} Displays only the package names"#,
+  {} {} Displays all packages available.
+  {} {} Displays package version along with the names.
+  {} {} Displays only installed packages.
+  {} {} Displays only local packages."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "list".bright_purple(),
         "--all".bright_cyan(),
         "(-a)".yellow(),
+        "--version".bright_cyan(),
+        "(-v)".yellow(),
         "--installed".bright_cyan(),
         "(-i)".yellow(),
         "--local".bright_cyan(),
         "(-l)".yellow(),
-        "--names".bright_cyan(),
-        "(-n)".yellow(),
     );
     println!("{}", list);
     std::process::exit(0);
@@ -176,7 +194,7 @@ Provides information on a specific package.
 Usage: {} {}
 
 Options: 
-  {} {} Displays only local packages"#,
+  {} {} Displays info only local packages"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "list".bright_purple(),
@@ -249,8 +267,8 @@ Quits an application or a list of applications.
 Usage: {} {} {}
 
 Options:
-  {} {} Accepts all prompts
-  {} {} Force quits the application"#,
+  {} {} Accepts all prompts while quiting.
+  {} {} Force quits the application."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "quit".bright_purple(),
@@ -296,9 +314,9 @@ pub fn clean_help() {
         r#"
 Novus Package Manager {}
 
-Clears novus cache
+Clears novus cache.
 
-Usage: {} {} [packages] [flags]"#,
+Usage: {} {}"#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "clean".bright_purple(),
@@ -488,7 +506,7 @@ Novus Package Manager {}
 
 #[allow(unused)]
 pub fn list_error(arg: &String) {
-    let uninstall_error = format!(
+    let list_error = format!(
         r#"
 Novus Package Manager {}
 
@@ -501,17 +519,17 @@ Novus Package Manager {}
         "info".bright_blue(),
         "novus list --help".bright_green()
     );
-    println!("{}", uninstall_error);
+    println!("{}", list_error);
     std::process::exit(0);
 }
 
 #[allow(unused)]
 pub fn list_number_error() {
-    let uninstall_error = format!(
+    let list_error = format!(
         r#"
 Novus Package Manager {}
 
-{} Unexpected a number. Found a string instead.
+{} Expected a number. Found a string instead.
       
 {} Use {} for more information about this command."#,
         __VERSION__.bright_green().bold(),
@@ -519,7 +537,7 @@ Novus Package Manager {}
         "info".bright_blue(),
         "novus list --help".bright_green()
     );
-    println!("{}", uninstall_error);
+    println!("{}", list_error);
     std::process::exit(0);
 }
 
