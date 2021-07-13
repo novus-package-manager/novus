@@ -81,6 +81,15 @@ pub fn verify_args(
                 }
             }
         }
+        "update" => {
+            for flag in flags.iter() {
+                for install_flag in install_flags.iter() {
+                    if install_flag.contains(&flag.as_str()) {
+                        new_flags.push(flag.clone());
+                    }
+                }
+            }
+        }
         "list" => {
             for flag in flags.iter() {
                 for list_flag in list_flags.iter() {

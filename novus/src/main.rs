@@ -66,6 +66,8 @@ async fn main() {
         }
     }
 
+    println!("command is {}", command);
+
     let (flags, packages) = get_arguments(&args);
 
     let (flags, packages) = verify_args(

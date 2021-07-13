@@ -138,7 +138,7 @@ Options:
   {} {} Displays verbose while updating."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
-        "add".bright_purple(),
+        "update".bright_purple(),
         "[packages]".white(),
         "[flags]".white(),
         "--no-color".bright_cyan(),
@@ -340,6 +340,24 @@ Novus Package Manager {}
         "novus install --help".bright_green()
     );
     println!("{}", install_error);
+    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn update_error() {
+    let update_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing list of packages to update.
+    
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus update --help".bright_green()
+    );
+    println!("{}", update_error);
     std::process::exit(0);
 }
 

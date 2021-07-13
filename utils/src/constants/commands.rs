@@ -2,7 +2,7 @@
 pub const COMMANDS: [[&str; 2]; 11] = [
   ["install", "i"],
   ["uninstall", "u"],
-  ["update", "updgrade"],
+  ["update", "upgrade"],
   ["clean", "clear"],
   ["search", "find"],
   ["config", "config"],
