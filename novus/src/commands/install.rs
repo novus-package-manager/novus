@@ -59,10 +59,10 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
         let mut max = true;
         let pkg_split: Vec<&str> = pkg.split("@").collect();
         let mut pkg_name = pkg.as_str();
-        let mut desired_version = "0";
+        let mut desired_version = "0".to_string();
         if pkg_split.len() == 2 {
             pkg_name = pkg_split[0];
-            desired_version = pkg_split[1];
+            desired_version = pkg_split[1].to_string();
         }
         let pkg_clone = pkg_name.clone();
         let package: Package = get_package(pkg_clone).await;
@@ -91,7 +91,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
 
         if !update {
             if desired_version == "0" {
-                desired_version = latest_version.as_str();
+                desired_version = latest_version.to_string();
             }
             package
                 .versions
@@ -103,7 +103,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                     ))
                 });
         } else {
-            desired_version = &latest_version;
+            desired_version = latest_version.to_string();
         }
 
         let url = package.versions[&desired_version.to_string()].url.clone();
@@ -170,6 +170,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                 loc.clone(),
                 display_name,
                 package_name,
+                desired_version,
                 multi,
                 no_color,
                 file_type,
@@ -330,6 +331,7 @@ pub async fn install(
     output_file: String,
     display_name: String,
     package_name: String,
+    version: String,
     multi: bool,
     no_color: bool,
     file_type: String,
@@ -405,7 +407,8 @@ pub async fn install(
 
         let output = output.unwrap_or_else(|e| {
             if e.to_string().contains("requires elevation") {
-                code = autoelevateinstall(package_name);
+                let package_ver = package_name + "@" + &version;
+                code = autoelevateinstall(package_ver);
                 if no_color {
                     pb.println("Auto Elevating");
                 } else {
