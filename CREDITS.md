@@ -17,3 +17,4 @@
 - AnsiTerm (https://crates.io/crates/ansi_term)
 - CtrlC (https://crates.io/crates/ctrlc)
 - Idea for package manager inspired by Chocolatey (https://github.com/chocolatey/choco) and Electric (https://github.com/electric-package-manager/electric)
+- Website theme inspired by Hydralite (https://www.hydralite.io)
