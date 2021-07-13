@@ -3,6 +3,103 @@ use crate::classes::local_package_info::LocalPackageInfo;
 
 use colored::Colorize;
 
+pub fn check_installed(display_name: String) -> bool {
+    use winreg::enums::*;
+    use winreg::RegKey;
+
+    let mut regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
+    let mut exists: bool = false;
+    for i in 0..2 {
+        if i == 1 {
+            regkey = RegKey::predef(HKEY_CURRENT_USER);
+        }
+        let path: RegKey = regkey
+            .open_subkey_with_flags(
+                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+                KEY_READ,
+            )
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        for name in path
+            .enum_keys()
+            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
+        {
+            let unins_path: RegKey = regkey
+                .open_subkey(format!(
+                    "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
+                    name
+                ))
+                .unwrap_or(
+                    regkey
+                        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                        .unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
+                );
+            let app_name: String = unins_path
+                .get_value("DisplayName")
+                .unwrap_or("NULL".to_string());
+            // println!("app name: {}", app_name);
+            if app_name
+                .to_lowercase()
+                .starts_with(display_name.to_lowercase().as_str())
+            {
+                exists = true;
+            }
+        }
+    }
+    regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
+    if exists == false {
+        let path: RegKey = regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        for name in path
+            .enum_keys()
+            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
+        {
+            let unins_path: RegKey = regkey.open_subkey(format!("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products\\{}\\InstallProperties", name)).unwrap_or(regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string())));
+            let app_name: String = unins_path
+                .get_value("DisplayName")
+                .unwrap_or("NULL".to_string());
+            // println!("app name 2: {}", app_name);
+            if app_name
+                .to_lowercase()
+                .starts_with(display_name.to_lowercase().as_str())
+            {
+                exists = true;
+            }
+        }
+    }
+
+    if exists == false {
+        let path: RegKey = regkey
+            .open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        for name in path
+            .enum_keys()
+            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
+        {
+            let unins_path: RegKey = regkey
+                .open_subkey(format!(
+                    "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
+                    name
+                ))
+                .unwrap_or(
+                    regkey
+                        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                        .unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
+                );
+            let app_name: String = unins_path
+                .get_value("DisplayName")
+                .unwrap_or("NULL".to_string());
+            // println!("app name 3: {}", app_name);
+            if app_name
+                .to_lowercase()
+                .starts_with(display_name.to_lowercase().as_str())
+            {
+                exists = true;
+            }
+        }
+    }
+
+    exists
+}
+
 pub fn get_startup_apps() -> Vec<String> {
     use winreg::enums::*;
     use winreg::RegKey;
@@ -10,14 +107,15 @@ pub fn get_startup_apps() -> Vec<String> {
     let regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
 
     let path: RegKey = regkey
-    .open_subkey(
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-    )
-    .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run")
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     let mut apps: Vec<String> = vec![];
 
-    for (name, _val) in path.enum_values().map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string()))) {
+    for (name, _val) in path
+        .enum_values()
+        .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
+    {
         // println!("name: {}", name);
         apps.push(name);
     }

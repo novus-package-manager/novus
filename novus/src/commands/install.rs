@@ -11,18 +11,21 @@ use std::sync::Arc;
 use std::{fs::File, u64};
 use utils::autoelevate::autoelevateinstall;
 use utils::classes::package::Package;
+use utils::registry::check_installed;
 use utils::{cache, checksum, get_package, handle_error};
-// use std::time::Instant;
 
-pub async fn installer(packages: Vec<String>, flags: Vec<String>) -> i32 {
+pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) -> i32 {
     let mut no_progress = false;
     let mut no_color = false;
-    let mut packages_version: Vec<String> = vec![];
+    let mut confirm = false;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
     if flags.contains(&"--no-progress".to_string()) || flags.contains(&"-np".to_string()) {
         no_progress = true;
+    }
+    if flags.contains(&"--yes".to_string()) || flags.contains(&"-y".to_string()) {
+        confirm = true;
     }
     let mut handles = vec![];
     let mut sizes = vec![];
@@ -63,20 +66,46 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>) -> i32 {
         }
         let pkg_clone = pkg_name.clone();
         let package: Package = get_package(pkg_clone).await;
-        let latest_version = package.latest_version;
-        if desired_version == "0" {
-            desired_version = latest_version.as_str();
+
+        if !confirm && !update {
+            if check_installed(package.display_name.clone()) {
+                print!(
+                    "{} is already installed on your system. Do you want to reinstall it? (Y/N): ",
+                    package.display_name
+                );
+                std::io::stdout()
+                    .flush()
+                    .ok()
+                    .expect("Could not flush stdout");
+                let mut string: String = String::new();
+                let _ = std::io::stdin().read_line(&mut string);
+                if string.trim().to_lowercase() != "y" {
+                    continue;
+                }
+            }
         }
-        let package_ver = pkg.to_string() + "@" + desired_version;
-        packages_version.push(package_ver);
+
+        let latest_version = package.latest_version;
         let display_name = package.display_name;
         let threads = package.threads;
-        package
-            .versions
-            .get(&desired_version.to_string())
-            .unwrap_or_else(|| {
-                handle_error_and_exit(format!("That version of {} does not exist yet", pkg_clone))
-            });
+
+        if !update {
+            if desired_version == "0" {
+                desired_version = latest_version.as_str();
+            }
+            package
+                .versions
+                .get(&desired_version.to_string())
+                .unwrap_or_else(|| {
+                    handle_error_and_exit(format!(
+                        "That version of {} does not exist yet",
+                        pkg_clone
+                    ))
+                });
+        } else {
+            desired_version = &latest_version;
+        }
+
         let url = package.versions[&desired_version.to_string()].url.clone();
         let checksum = package.versions[&desired_version.to_string()]
             .checksum
