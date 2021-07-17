@@ -6,6 +6,7 @@ pub struct Package {
   pub package_name: String,
   pub display_name: String,
   pub exec_name: String,
+  pub portable: Option<bool>,
   pub creator: String,
   pub description: String,
   pub latest_version: String,

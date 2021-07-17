@@ -27,6 +27,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
     if flags.contains(&"--yes".to_string()) || flags.contains(&"-y".to_string()) {
         confirm = true;
     }
+
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
@@ -66,6 +67,12 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
         }
         let pkg_clone = pkg_name.clone();
         let package: Package = get_package(pkg_clone).await;
+
+        let portable = package.portable;
+
+        if portable != Some(false) {
+            println!("portable package")
+        }
 
         if !confirm && !update {
             if check_installed(package.display_name.clone()) {

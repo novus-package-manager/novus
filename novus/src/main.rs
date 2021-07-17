@@ -105,9 +105,6 @@ async fn main() {
         "info" => {
             info(args, package_list).await;
         }
-        // "startup" => {
-        //     startup(args, flags).await;
-        // }
         &_ => {}
     }
 
@@ -123,11 +120,6 @@ async fn main() {
 fn create_dirs() {
     let appdata = std::env::var("APPDATA").unwrap();
     let loc = format!(r"{}\novus\", appdata);
-    let path = std::path::Path::new(loc.as_str());
-    if !path.exists() {
-        let _ = std::fs::create_dir(path);
-    }
-    let loc = format!(r"{}\novus\config", appdata);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);

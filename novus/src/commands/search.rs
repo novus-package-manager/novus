@@ -22,7 +22,7 @@ pub async fn search(packages: Vec<&str>, flags: Vec<String>, package: &str) {
     if flags.contains(&"--version".to_string()) || flags.contains(&"-v".to_string()) {
         version = true;
     }
-    println!("novus {} \n", __VERSION__.bright_green().bold());
+    println!("Novus Package Manager {} \n", __VERSION__.bright_green().bold());
 
     #[allow(unused_assignments)]
     let mut installed_packages: Vec<String> = vec![];
