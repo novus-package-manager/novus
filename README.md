@@ -60,3 +60,6 @@ Take a look at the [docs](https://docs.novuspkg.com/docs/getting-started/install
 [ZaphodElevated](https://www.github.com/ZaphodElevated) - Founder And Developer Of Novus
 
 [VarunPotti](https://github.com/VarunPotti) - Developer of Novus
+
+# Credits
+[Credits](https://github.com/novus-package-manager/novus/blob/main/CREDITS.md)
