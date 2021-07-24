@@ -70,7 +70,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
 
         let portable = package.portable;
 
-        if portable != Some(false) {
+        if portable == Some(true) {
             println!("portable package")
         }
 

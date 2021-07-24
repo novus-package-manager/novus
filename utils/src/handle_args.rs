@@ -45,7 +45,10 @@ pub fn verify_args(
                 let mut string: String = String::new();
                 let _ = std::io::stdin().read_line(&mut string);
                 if string.trim().to_lowercase() == "y" {
-                    let new_package = revised_package[0].to_string() + "@" + version;
+                    let mut new_package = revised_package[0].to_string();
+                    if command == "install" {
+                        new_package = revised_package[0].to_string() + "@" + version;
+                    }
                     new_packages.push(new_package.to_string());
                 } else {
                     process::exit(0);
