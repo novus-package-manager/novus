@@ -56,7 +56,11 @@ Run {} for more info about each command."#,
     );
 
     println!("{}", about);
-    std::process::exit(0);
+}
+
+#[allow(unused)]
+pub fn display_version() {
+    println!("{}", format!("Novus Package Manager {}", __VERSION__.bright_green().bold()));
 }
 
 #[allow(unused)]
@@ -87,7 +91,6 @@ Options:
         "(-v)".yellow(),
     );
     println!("{}", install);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -118,7 +121,6 @@ Options:
         "(-v)".yellow()
     );
     println!("{}", uninstall);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -149,7 +151,6 @@ Options:
         "(-v)".yellow(),
     );
     println!("{}", update);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -180,7 +181,6 @@ Options:
         "(-l)".yellow(),
     );
     println!("{}", list);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -202,7 +202,6 @@ Options:
         "(-l)".yellow(),
     );
     println!("{}", info);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -235,7 +234,6 @@ Options:
         "(-?)".yellow(),
     );
     println!("{}", startup);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -253,7 +251,6 @@ Usage: {} {} {}"#,
         "7-zip".white(),
     );
     println!("{}", search);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -279,7 +276,6 @@ Options:
         "(-y)".yellow(),
     );
     println!("{}", quit);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -305,7 +301,6 @@ Options:
         "(-y)".yellow(),
     );
     println!("{}", forcequit);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -322,7 +317,6 @@ Usage: {} {}"#,
         "clean".bright_purple(),
     );
     println!("{}", clean);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -340,7 +334,6 @@ Novus Package Manager {}
         "novus install --help".bright_green()
     );
     println!("{}", install_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -358,7 +351,6 @@ Novus Package Manager {}
         "novus update --help".bright_green()
     );
     println!("{}", update_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -376,7 +368,6 @@ Novus Package Manager {}
         "novus uninstall --help".bright_green()
     );
     println!("{}", uninstall_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -394,7 +385,6 @@ Novus Package Manager {}
         "novus search --help".bright_green()
     );
     println!("{}", search_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -412,7 +402,6 @@ Novus Package Manager {}
         "novus startup --help".bright_green()
     );
     println!("{}", startup_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -430,7 +419,6 @@ Novus Package Manager {}
         "novus startup --help".bright_green()
     );
     println!("{}", startup_command_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -448,7 +436,6 @@ Novus Package Manager {}
         "novus startup add --help".bright_green()
     );
     println!("{}", startup_command_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -466,7 +453,6 @@ Novus Package Manager {}
         "novus startup remove --help".bright_green()
     );
     println!("{}", startup_command_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -484,7 +470,6 @@ Novus Package Manager {}
         "novus info --help".bright_green()
     );
     println!("{}", info_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -501,7 +486,6 @@ Try running with the {} flag to provide information on packages which exist loca
         "novus info --help".bright_green()
     );
     println!("{}", info_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -519,7 +503,6 @@ Novus Package Manager {}
         "novus quit --help".bright_green()
     );
     println!("{}", quit_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -538,7 +521,6 @@ Novus Package Manager {}
         "novus list --help".bright_green()
     );
     println!("{}", list_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -556,7 +538,6 @@ Novus Package Manager {}
         "novus list --help".bright_green()
     );
     println!("{}", list_error);
-    std::process::exit(0);
 }
 
 #[allow(unused)]
@@ -568,5 +549,4 @@ pub fn invalid_command(command: &str) {
         "info".bright_blue(),
         "novus --help".bright_green()
     );
-    std::process::exit(0);
 }

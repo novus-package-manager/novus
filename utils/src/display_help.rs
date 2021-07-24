@@ -2,12 +2,12 @@ use crate::constants::commands::COMMANDS;
 use crate::constants::help_menu::{
     about, clean_help, forcequit_help, info_error, info_help, install_error, install_help,
     invalid_command, list_help, quit_error, quit_help, search_error, search_help, startup_error,
-    startup_help, uninstall_error, uninstall_help, update_error, update_help,
+    startup_help, uninstall_error, uninstall_help, update_error, update_help, display_version
 };
-use crate::constants::version::__VERSION__;
+use crate::check_version::check_version;
 use colored::Colorize;
 
-pub fn display_help(args: &Vec<String>) -> &String {
+pub async fn display_help(args: &Vec<String>) -> &String {
     if args.len() == 1 {
         about();
     } else if args.len() == 2 {
@@ -18,7 +18,8 @@ pub fn display_help(args: &Vec<String>) -> &String {
             }
         }
         match command {
-            "--version" => println!("{}", format!("volt {}", __VERSION__.bright_green().bold())),
+            "--version" => display_version(),
+            "-v" => display_version(),
             "install" => install_error(),
             "uninstall" => uninstall_error(),
             "update" => update_error(),
@@ -34,6 +35,18 @@ pub fn display_help(args: &Vec<String>) -> &String {
             "-?" => about(),
             &_ => invalid_command(command),
         }
+
+        let update_available = check_version().await;
+
+        if update_available {
+            println!(
+                "\n{} A new version of Novus is available. Run {} to update.",
+                "NOTE".bright_cyan(),
+                "novus update novus".bright_cyan()
+            );
+        }
+
+        std::process::exit(0);
     } else if args.len() > 2 {
         let mut command: &str = args[1].as_str();
         for cmd in COMMANDS.iter() {
@@ -57,9 +70,21 @@ pub fn display_help(args: &Vec<String>) -> &String {
                     "startup" => startup_help(),
                     &_ => invalid_command(command),
                 }
+
+                let update_available = check_version().await;
+
+                if update_available {
+                    println!(
+                        "\n{} A new version of Novus is available. Run {} to update.",
+                        "NOTE".bright_cyan(),
+                        "novus update novus".bright_cyan()
+                    );
+                }        
+
+                std::process::exit(0);
             }
         }
     }
 
-    &args[1]
+     &args[1]
 }

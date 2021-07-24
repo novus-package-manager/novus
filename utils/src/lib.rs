@@ -9,3 +9,4 @@ pub mod handle_error;
 pub mod registry;
 pub mod classes;
 pub mod scripts;
+pub mod check_version;

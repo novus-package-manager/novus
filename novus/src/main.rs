@@ -11,10 +11,10 @@ use list::list;
 use quit::quit;
 use search::search;
 use serde_json::Value;
-// use startup::startup;
 use std::time::Instant;
 use uninstall::uninstaller;
 use utils::constants::commands::COMMANDS;
+use utils::check_version::check_version;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
 use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
 
@@ -28,6 +28,8 @@ async fn main() {
 
     create_dirs();
 
+    let update_available: bool = check_version().await;
+
     ctrlc::set_handler(move || {
         println!("\n{}", "Aborted!".bright_cyan());
         std::process::exit(0);
@@ -36,7 +38,7 @@ async fn main() {
 
     let args: Vec<String> = std::env::args().collect();
 
-    let command = display_help(&args);
+    let command: String = display_help(&args).await.to_string();
 
     #[allow(unused)]
     let mut data = String::new();
@@ -58,7 +60,7 @@ async fn main() {
         })
         .collect();
 
-    let mut command: &str = command;
+    let mut command: &str = &command;
 
     for cmd in COMMANDS.iter() {
         if command == cmd[1] {
@@ -114,6 +116,15 @@ async fn main() {
         2,
         start.elapsed().as_millis().to_string(),
     );
+
+    if update_available {
+        println!(
+            "\n{} A new version of Novus is available. Run {} to update.",
+            "NOTE".bright_cyan(),
+            "novus update novus".bright_cyan()
+        );
+    }
+
     std::process::exit(0)
 }
 
