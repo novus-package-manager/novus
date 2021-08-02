@@ -13,8 +13,8 @@ use search::search;
 use serde_json::Value;
 use std::time::Instant;
 use uninstall::uninstaller;
-use utils::constants::commands::COMMANDS;
 use utils::check_version::check_version;
+use utils::constants::commands::COMMANDS;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
 use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
 

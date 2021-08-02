@@ -1,15 +1,16 @@
+use crate::check_version::check_version;
 use crate::constants::commands::COMMANDS;
 use crate::constants::help_menu::{
-    about, clean_help, forcequit_help, info_error, info_help, install_error, install_help,
-    invalid_command, list_help, quit_error, quit_help, search_error, search_help, startup_error,
-    startup_help, uninstall_error, uninstall_help, update_error, update_help, display_version
+    about, clean_help, display_version, forcequit_help, info_error, info_help, install_error,
+    install_help, invalid_command, list_help, quit_error, quit_help, search_error, search_help,
+    startup_error, startup_help, uninstall_error, uninstall_help, update_error, update_help,
 };
-use crate::check_version::check_version;
 use colored::Colorize;
 
 pub async fn display_help(args: &Vec<String>) -> &String {
     if args.len() == 1 {
         about();
+        std::process::exit(0);
     } else if args.len() == 2 {
         let mut command: &str = args[1].as_str();
         for cmd in COMMANDS.iter() {
@@ -46,7 +47,9 @@ pub async fn display_help(args: &Vec<String>) -> &String {
             );
         }
 
-        std::process::exit(0);
+        if command != "clean" && command != "list" {
+            std::process::exit(0);
+        }
     } else if args.len() > 2 {
         let mut command: &str = args[1].as_str();
         for cmd in COMMANDS.iter() {
@@ -79,12 +82,12 @@ pub async fn display_help(args: &Vec<String>) -> &String {
                         "NOTE".bright_cyan(),
                         "novus update novus".bright_cyan()
                     );
-                }        
+                }
 
                 std::process::exit(0);
             }
         }
     }
 
-     &args[1]
+    &args[1]
 }

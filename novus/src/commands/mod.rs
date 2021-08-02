@@ -1,6 +1,7 @@
 pub mod clean;
 pub mod info;
 pub mod install;
+pub mod install_portable;
 pub mod list;
 pub mod quit;
 pub mod search;

@@ -21,5 +21,7 @@ serde_json = "1.0.64"
 clipboard-win = "4.2.1"
 sha2 = "0.9.5"
 regex = "1.5.4"
+flate2 = "1.0.20"
+zip = "0.5.13"
 ansi_term = "0.12.1"
 ctrlc = { version = "3.0", features = ["termination"] }

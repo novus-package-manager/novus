@@ -1,3 +1,4 @@
+use crate::commands::install_portable::portable_installer;
 use cache::check_cache;
 use checksum::verify_checksum;
 use colored::Colorize;
@@ -70,122 +71,120 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
 
         let portable = package.portable;
 
-        if portable == Some(true) {
-            println!("portable package")
-        }
-
-        if !confirm && !update {
-            if check_installed(package.display_name.clone()) {
-                print!(
-                    "{} is already installed on your system. Do you want to reinstall it? (Y/N): ",
-                    package.display_name
-                );
-                std::io::stdout()
-                    .flush()
-                    .ok()
-                    .expect("Could not flush stdout");
-                let mut string: String = String::new();
-                let _ = std::io::stdin().read_line(&mut string);
-                if string.trim().to_lowercase() != "y" {
-                    continue;
-                }
-            }
-        }
-
-        let latest_version = package.latest_version;
-        let display_name = package.display_name;
-        let threads = package.threads;
-
-        if !update {
-            if desired_version == "0" {
-                desired_version = latest_version.to_string();
-            }
-            package
-                .versions
-                .get(&desired_version.to_string())
-                .unwrap_or_else(|| {
-                    handle_error_and_exit(format!(
-                        "That version of {} does not exist yet",
-                        pkg_clone
-                    ))
-                });
-        } else {
-            desired_version = latest_version.to_string();
-        }
-
-        let url = package.versions[&desired_version.to_string()].url.clone();
-        let checksum = package.versions[&desired_version.to_string()]
-            .checksum
-            .clone();
-        let file_type = package.versions[&desired_version.to_string()]
-            .file_type
-            .clone();
-        let iswitch = package.iswitches.clone();
-        let appdata = std::env::var("APPDATA")
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:110", e.to_string())));
-        let package_name = package.package_name;
-        let loc = format!(
-            r"{}\novus\{}@{}{}",
-            appdata, package_name, desired_version, file_type
-        );
-        if package.versions[&desired_version.to_string()].size != max_size {
-            max = false;
-        }
-        let exists = check_cache(
-            package_name.clone(),
-            desired_version.to_string().clone(),
-            file_type.clone(),
-        );
         if no_progress {
             max = false
         }
-        handles.push(tokio::spawn(async move {
-            if !exists {
-                threadeddownload(
-                    url.clone(),
-                    loc.clone(),
-                    threads,
-                    package_name.clone(),
-                    max,
-                    no_color,
-                )
-                .await;
-            }
-            if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
-                println!("{}", "Clearing cache and retrying".bright_blue());
-                utils::cache::clear_cache_for_package(&package_name);
-                threadeddownload(
-                    url.clone(),
-                    loc.clone(),
-                    threads,
-                    package_name.clone(),
-                    max,
-                    no_color,
-                )
-                .await;
-                if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
-                    println!(
-                        "{} {}",
-                        "Failed to Install".bright_red(),
-                        display_name.bright_red()
+
+        if portable == Some(true) {
+            portable_installer(package, update, no_color, no_progress, max_size, multi).await;
+        } else {
+            if !confirm && !update {
+                if check_installed(package.display_name.clone()) {
+                    print!(
+                        "{} is already installed on your system. Do you want to reinstall it? (Y/N): ",
+                        package.display_name
                     );
-                    process::exit(1);
+                    std::io::stdout()
+                        .flush()
+                        .ok()
+                        .expect("Could not flush stdout");
+                    let mut string: String = String::new();
+                    let _ = std::io::stdin().read_line(&mut string);
+                    if string.trim().to_lowercase() != "y" {
+                        continue;
+                    }
                 }
             }
-            let code: i32 = install(
-                &iswitch,
-                loc.clone(),
-                display_name,
-                package_name,
-                desired_version,
-                multi,
-                no_color,
-                file_type,
-            )
-            .await;
-
-            code
-        }));
+            let latest_version = package.latest_version;
+            let display_name = package.display_name;
+            let threads = package.threads;
+            if !update {
+                if desired_version == "0" {
+                    desired_version = latest_version.to_string();
+                }
+                package
+                    .versions
+                    .get(&desired_version.to_string())
+                    .unwrap_or_else(|| {
+                        handle_error_and_exit(format!(
+                            "That version of {} does not exist yet",
+                            pkg_clone
+                        ))
+                    });
+            } else {
+                desired_version = latest_version.to_string();
+            }
+            let url = package.versions[&desired_version.to_string()].url.clone();
+            let checksum = package.versions[&desired_version.to_string()]
+                .checksum
+                .clone();
+            let file_type = package.versions[&desired_version.to_string()]
+                .file_type
+                .clone();
+            let iswitch = package.iswitches.clone();
+            let appdata = std::env::var("APPDATA").unwrap_or_else(|e| {
+                handle_error_and_exit(format!("{} install.rs:110", e.to_string()))
+            });
+            let package_name = package.package_name;
+            let loc = format!(
+                r"{}\novus\{}@{}{}",
+                appdata, package_name, desired_version, file_type
+            );
+            if package.versions[&desired_version.to_string()].size != max_size {
+                max = false;
+            }
+            let exists = check_cache(
+                package_name.clone(),
+                desired_version.to_string().clone(),
+                file_type.clone(),
+            );
+            handles.push(tokio::spawn(async move {
+                if !exists {
+                    threadeddownload(
+                        url.clone(),
+                        loc.clone(),
+                        threads,
+                        package_name.clone(),
+                        max,
+                        no_color,
+                    )
+                    .await;
+                }
+                if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                    println!("{}", "Clearing cache and retrying".bright_blue());
+                    utils::cache::clear_cache_for_package(&package_name);
+                    threadeddownload(
+                        url.clone(),
+                        loc.clone(),
+                        threads,
+                        package_name.clone(),
+                        max,
+                        no_color,
+                    )
+                    .await;
+                    if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                        println!(
+                            "{} {}",
+                            "Failed to Install".bright_red(),
+                            display_name.bright_red()
+                        );
+                        process::exit(1);
+                    }
+                }
+                let code: i32 = install(
+                    &iswitch,
+                    loc.clone(),
+                    display_name,
+                    package_name,
+                    desired_version,
+                    multi,
+                    no_color,
+                    file_type,
+                )
+                .await;
+                code
+            }));
+        }
     }
 
     let code_arr = futures::future::join_all(handles).await;
@@ -387,7 +386,7 @@ pub async fn install(
         if !multi {
             while !completed_clone.load(Ordering::Relaxed) {
                 progress_bar.inc(5);
-                tokio::time::sleep(std::time::Duration::from_millis(100));
+                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             }
         }
         progress_bar.finish_and_clear();
