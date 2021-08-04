@@ -16,4 +16,5 @@
 - Regex (https://crates.io/crates/regex)
 - AnsiTerm (https://crates.io/crates/ansi_term)
 - CtrlC (https://crates.io/crates/ctrlc)
+- Powershell Installation from [Electric](https://github.com/electric-package-manager/electric)
 - Inspired by [Chocolatey](https://github.com/chocolatey/choco) and [Electric](https://github.com/electric-package-manager/electric)
