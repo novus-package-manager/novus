@@ -39,9 +39,25 @@ Novus is extremely easy to install.
 
 This can be done using the official installer or via powershell.
 
+## Powershell Installation
+
+You can install Novus using the powershell command.
+
+First, you must set the PowerShell Execution Policy from Restricted to RemoteSigned or Unrestricted to allow local PowerShell scripts to run.
+
+```powershell
+Set-ExecutionPolicy RemoteSigned
+```
+
+You can then run this command on your powershell window to install Novus
+
+```powershell
+iwr -useb https://storage.googleapis.com/novus_bucket/api/powershell_install.ps1 | iex
+```
+
 ## Official Installer
 
-The official installer for novus can be found [here](https://github.com/novus-package-manager/novus/releases/latest).
+The official installer for Novus can be found [here](https://github.com/novus-package-manager/novus/releases/latest).
 
 Check out the [Github Page](https://github.com/novus-package-manager/novus/releases)
 
