@@ -1,6 +1,6 @@
-use utils::classes::package::Package;
 use colored::Colorize;
 use std::{io::prelude::*, process};
+use utils::classes::package::Package;
 use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
 
@@ -54,7 +54,18 @@ pub async fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
 async fn forcequit_app(app: String) -> i32 {
     let package: Package = get_package(&app).await;
     let exec_name = package.exec_name;
-    let executable = exec_name + ".exe";
+    if exec_name == "none" {
+        println!(
+            "{} {}",
+            "Cannot terminate".bright_purple(),
+            app.bright_purple()
+        );
+        process::exit(0);
+    }
+    let mut executable = exec_name.clone();
+    if !exec_name.contains(".") {
+        executable = exec_name + ".exe";
+    }
     let output = process::Command::new("taskkill")
         .args(&["/im", &executable, "/f"])
         .output()
@@ -83,7 +94,10 @@ async fn quit_app(app: String) -> i32 {
         );
         process::exit(0);
     }
-    let executable = exec_name + ".exe";
+    let mut executable = exec_name.clone();
+    if !exec_name.contains(".") {
+        executable = exec_name + ".exe";
+    }
     let output = process::Command::new("taskkill")
         .args(&["/im", &executable])
         .output()
