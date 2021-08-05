@@ -5,15 +5,18 @@ use colored::Colorize;
 use get_package::get_package;
 use handle_error::handle_error_and_exit;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::fs::{copy, read_dir, remove_dir_all, remove_file, File};
 use std::io::{BufReader, BufWriter, Write};
+use std::path::Path;
 use std::process;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::{fs::File, u64};
+use std::u64;
 use utils::autoelevate::autoelevateinstall;
 use utils::classes::package::Package;
 use utils::registry::check_installed;
 use utils::{cache, checksum, get_package, handle_error};
+use zip::ZipArchive;
 
 pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) -> i32 {
     let mut no_progress = false;
@@ -126,23 +129,31 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                 handle_error_and_exit(format!("{} install.rs:110", e.to_string()))
             });
             let package_name = package.package_name;
-            let loc = format!(
+            let mut loc = format!(
                 r"{}\novus\{}@{}{}",
                 appdata, package_name, desired_version, file_type
             );
             if package.versions[&desired_version.to_string()].size != max_size {
                 max = false;
             }
+            let mut executable_type = file_type.clone();
+            if file_type == ".zip" {
+                executable_type = ".exe".to_string();
+            }
             let exists = check_cache(
                 package_name.clone(),
                 desired_version.to_string().clone(),
-                file_type.clone(),
+                executable_type.clone(),
             );
             handles.push(tokio::spawn(async move {
                 if !exists {
+                    let mut new_loc = loc.clone();
+                    if url.contains(".zip") {
+                        new_loc = loc.replace(".exe", ".zip").replace(".msi", ".zip");
+                    }
                     threadeddownload(
                         url.clone(),
-                        loc.clone(),
+                        new_loc.clone(),
                         threads,
                         package_name.clone(),
                         max,
@@ -150,18 +161,40 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                     )
                     .await;
                 }
-                if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
-                    println!("{}", "Clearing cache and retrying".bright_blue());
-                    utils::cache::clear_cache_for_package(&package_name);
-                    threadeddownload(
-                        url.clone(),
-                        loc.clone(),
-                        threads,
-                        package_name.clone(),
-                        max,
-                        no_color,
-                    )
-                    .await;
+                if !url.contains(".zip") {
+                    if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                        println!("{}", "Clearing cache and retrying".bright_blue());
+                        utils::cache::clear_cache_for_package(&package_name);
+                        threadeddownload(
+                            url.clone(),
+                            loc.clone(),
+                            threads,
+                            package_name.clone(),
+                            max,
+                            no_color,
+                        )
+                        .await;
+                        if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                            println!(
+                                "{} {}",
+                                "Failed to Install".bright_red(),
+                                display_name.bright_red()
+                            );
+                            process::exit(1);
+                        }
+                    }
+                }
+
+                if url.contains(".zip") {
+                    if !Path::new(&loc).exists() {
+                        let new_loc = loc.replace(".exe", ".zip").replace(".msi", ".zip");
+                        loc = extract_file(
+                            new_loc.clone(),
+                            appdata,
+                            package_name.clone(),
+                            desired_version.clone(),
+                        );
+                    }
                     if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
                         println!(
                             "{} {}",
@@ -171,6 +204,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                         process::exit(1);
                     }
                 }
+
                 let code: i32 = install(
                     &iswitch,
                     loc.clone(),
@@ -202,6 +236,53 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
     }
 
     0
+}
+
+fn extract_file(
+    loc: String,
+    appdata: String,
+    package_name: String,
+    desired_version: String,
+) -> String {
+    // Extract exe from package
+
+    let zip_file = File::open(loc.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    let mut archive =
+        ZipArchive::new(zip_file).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    let extract_dir = format!(r"{}\novus\{}@{}", appdata, package_name, desired_version);
+
+    archive
+        .extract(&extract_dir)
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    let mut path: String = String::new();
+
+    for entry in
+        read_dir(Path::new(&extract_dir)).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
+    {
+        let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        path = entry.path().display().to_string();
+    }
+
+    let mut filetype = ".exe";
+
+    if path.contains(".msi") {
+        filetype = ".msi";
+    }
+
+    let copy_dir = format!(
+        r"{}\novus\{}@{}{}",
+        appdata, package_name, desired_version, filetype
+    );
+
+    copy(path, copy_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    remove_dir_all(extract_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    remove_file(loc.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+
+    copy_dir
 }
 
 #[allow(unused)]
