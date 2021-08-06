@@ -66,7 +66,15 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
     let mut uninstall_string = get_unins_string(display_name.clone());
 
     uninstall_string = uninstall_string.clone();
-    let split: Vec<&str> = uninstall_string.split(".exe").collect();
+    let mut split: Vec<&str> = vec![];
+    let mut file_extension: &str = ".exe";
+    if uninstall_string.contains(".exe") {
+        split = uninstall_string.split(".exe").collect();
+    }
+    if uninstall_string.contains(".bat") {
+        split = uninstall_string.split(".bat").collect();
+        file_extension = ".bat";
+    }
     let mut args: Vec<&str> = vec![];
     let mut splits = split[1].replace("\"", "");
     if split[1].contains("/I") {
@@ -82,7 +90,7 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
             args.push(switch.as_str());
         }
     }
-    uninstall_string = (split[0].to_string() + ".exe\"").replace("\"", "");
+    uninstall_string = (split[0].to_string() + file_extension + "\"").replace("\"", "");
     // println!("args: {:?}", args);
     // println!("uninstall_string: {}", uninstall_string);
 
