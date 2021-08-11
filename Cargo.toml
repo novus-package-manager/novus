@@ -28,5 +28,6 @@
 [workspace]
 members = [
 	"novus",
+	"mslnk",
 	"utils"
 ]

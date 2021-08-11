@@ -126,7 +126,7 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
                 .clone();
             let iswitch = package.iswitches.clone();
             let appdata = std::env::var("APPDATA").unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:110", e.to_string()))
+                handle_error_and_exit(e.to_string())
             });
             let package_name = package.package_name;
             let mut loc = format!(
@@ -317,7 +317,7 @@ pub async fn threadeddownload(
         .content_length()
         .unwrap_or_else(|| handle_error_and_exit("An Unexpected Error Occured!".to_string()));
     let appdata = std::env::var("APPDATA")
-        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:106", e.to_string())));
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     if max {
         let progress_bar = ProgressBar::new(total_length);
@@ -340,7 +340,7 @@ pub async fn threadeddownload(
             let (start, end) = get_splits(index + 1, total_length, threads);
             let pb = progress_bar.clone();
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:119", e.to_string()))
+                handle_error_and_exit(e.to_string())
             }));
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -351,11 +351,11 @@ pub async fn threadeddownload(
                     .send()
                     .await
                     .unwrap_or_else(|e| {
-                        handle_error_and_exit(format!("{} install.rs:129", e.to_string()))
+                        handle_error_and_exit(e.to_string())
                     });
 
                 while let Some(chunk) = response.chunk().await.unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:134", e.to_string()))
+                    handle_error_and_exit(e.to_string())
                 }) {
                     pb.inc(chunk.len() as u64);
                     let _ = file.write(&*chunk);
@@ -371,7 +371,7 @@ pub async fn threadeddownload(
             let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:150", e.to_string()))
+                handle_error_and_exit(e.to_string())
             }));
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -382,10 +382,10 @@ pub async fn threadeddownload(
                     .send()
                     .await
                     .unwrap_or_else(|e| {
-                        handle_error_and_exit(format!("{} install.rs:160", e.to_string()))
+                        handle_error_and_exit(e.to_string())
                     });
                 while let Some(chunk) = response.chunk().await.unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:164", e.to_string()))
+                    handle_error_and_exit(e.to_string())
                 }) {
                     let _ = file.write(&*chunk);
                 }
@@ -396,7 +396,7 @@ pub async fn threadeddownload(
     }
 
     let mut file = File::create(output.clone())
-        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:175", e.to_string())));
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     let appdata = std::env::var("APPDATA").unwrap();
 
@@ -404,7 +404,7 @@ pub async fn threadeddownload(
         let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file = File::open(loc.clone())
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:183", e.to_string())));
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let mut reader = BufReader::new(downloaded_file);
         let _ = std::io::copy(&mut reader, &mut buf);
         let _ = file.write_all(&buf);

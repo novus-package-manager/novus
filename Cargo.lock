@@ -814,6 +814,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "mslnk"
+version = "0.1.6"
+dependencies = [
+ "bitflags",
+ "byteorder",
+]
+
+[[package]]
 name = "native-tls"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -855,6 +863,7 @@ dependencies = [
  "flate2",
  "futures",
  "indicatif",
+ "mslnk",
  "regex",
  "reqwest",
  "serde",

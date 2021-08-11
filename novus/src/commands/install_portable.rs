@@ -10,6 +10,7 @@ use std::sync::Arc;
 use utils::classes::package::Package;
 use utils::handle_error::handle_error_and_exit;
 use zip::ZipArchive;
+use mslnk::ShellLink;
 
 pub async fn portable_installer(
     package: Package,
@@ -23,18 +24,23 @@ pub async fn portable_installer(
     let display_name = package.display_name;
     let threads = package.threads;
     let latest_version = package.latest_version;
+    let exec_name = package.exec_name;
 
     let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
         handle_error_and_exit("Failed to locate appdata directory".to_string())
     });
 
-    let tools_dir = Path::new(&appdata).join("novus").join("tools");
+    let user_profile = std::env::var("USERPROFILE").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate user profile directory".to_string())
+    });
+
+    let tools_dir = Path::new(&user_profile).join("novus").join("tools");
 
     if !tools_dir.exists() {
         fs::create_dir(tools_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
     }
 
-    let shims_dir = Path::new(&appdata).join("novus").join("shims");
+    let shims_dir = Path::new(&user_profile).join("novus").join("shims");
 
     if !shims_dir.exists() {
         fs::create_dir(shims_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
@@ -53,7 +59,7 @@ pub async fn portable_installer(
             .unwrap_or_else(|| {
                 handle_error_and_exit(format!(
                     "That version of {} does not exist yet",
-                    display_name
+                    display_name.clone()
                 ))
             });
     } else {
@@ -89,16 +95,27 @@ pub async fn portable_installer(
     let extract_dir = tools_dir.join(package_version);
 
     if !extract_dir.exists() {
-        extract_file(zip_file, no_color, multi, display_name, extract_dir.clone()).await;
+        extract_file(zip_file, no_color, multi, display_name.clone(), extract_dir.clone()).await;
     }
 
-    let (shim, copy_dir): (PathBuf, PathBuf) = check_shims(shims_dir, extract_dir, package_name);
+    let (shim, copy_dir): (PathBuf, PathBuf) = check_shims(shims_dir, extract_dir, exec_name);
 
     if !copy_dir.exists() {
         File::create(copy_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let content = format!("@echo off \n \"{}\" %*", shim.display().to_string());
         fs::write(copy_dir, content).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
     }
+
+    let star_menu_loc = format!(r"{}\Microsoft\Windows\Start Menu\Programs\Novus", appdata);
+    let start_menu_dir = Path::new(&star_menu_loc);
+    if !start_menu_dir.exists() {
+        fs::create_dir(start_menu_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    }
+
+    let shortcut_loc = start_menu_dir.join(format!("{}.lnk", display_name.clone())); 
+
+    let sl = ShellLink::new(shim).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+    sl.create_lnk(shortcut_loc).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 }
 
 fn check_shims(
@@ -242,7 +259,7 @@ async fn threadeddownload(
         .content_length()
         .unwrap_or_else(|| handle_error_and_exit("An Unexpected Error Occured!".to_string()));
     let appdata = std::env::var("APPDATA")
-        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:106", e.to_string())));
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     if max {
         let progress_bar = ProgressBar::new(total_length);
@@ -265,7 +282,7 @@ async fn threadeddownload(
             let (start, end) = get_splits(index + 1, total_length, threads);
             let pb = progress_bar.clone();
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:119", e.to_string()))
+                handle_error_and_exit(e.to_string())
             }));
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -276,11 +293,11 @@ async fn threadeddownload(
                     .send()
                     .await
                     .unwrap_or_else(|e| {
-                        handle_error_and_exit(format!("{} install.rs:129", e.to_string()))
+                        handle_error_and_exit(e.to_string())
                     });
 
                 while let Some(chunk) = response.chunk().await.unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:134", e.to_string()))
+                    handle_error_and_exit(e.to_string())
                 }) {
                     pb.inc(chunk.len() as u64);
                     let _ = file.write(&*chunk);
@@ -296,7 +313,7 @@ async fn threadeddownload(
             let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
             let (start, end) = get_splits(index + 1, total_length, threads);
             let mut file = BufWriter::new(File::create(loc).unwrap_or_else(|e| {
-                handle_error_and_exit(format!("{} install.rs:150", e.to_string()))
+                handle_error_and_exit(e.to_string())
             }));
             let url = url.clone();
             handles.push(tokio::spawn(async move {
@@ -307,10 +324,10 @@ async fn threadeddownload(
                     .send()
                     .await
                     .unwrap_or_else(|e| {
-                        handle_error_and_exit(format!("{} install.rs:160", e.to_string()))
+                        handle_error_and_exit(e.to_string())
                     });
                 while let Some(chunk) = response.chunk().await.unwrap_or_else(|e| {
-                    handle_error_and_exit(format!("{} install.rs:164", e.to_string()))
+                    handle_error_and_exit(e.to_string())
                 }) {
                     let _ = file.write(&*chunk);
                 }
@@ -321,7 +338,7 @@ async fn threadeddownload(
     }
 
     let mut file = File::create(output.clone())
-        .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:175", e.to_string())));
+        .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
 
     let appdata = std::env::var("APPDATA").unwrap();
 
@@ -329,7 +346,7 @@ async fn threadeddownload(
         let loc = format!(r"{}\novus\setup_{}{}.tmp", appdata, package_name, index + 1);
         let mut buf: Vec<u8> = vec![];
         let downloaded_file = File::open(loc.clone())
-            .unwrap_or_else(|e| handle_error_and_exit(format!("{} install.rs:183", e.to_string())));
+            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
         let mut reader = BufReader::new(downloaded_file);
         let _ = std::io::copy(&mut reader, &mut buf);
         let _ = file.write_all(&buf);

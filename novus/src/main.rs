@@ -129,8 +129,18 @@ async fn main() {
 }
 
 fn create_dirs() {
-    let appdata = std::env::var("APPDATA").unwrap();
+    let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate appdata directory".to_string())
+    });
+    let user_profile = std::env::var("USERPROFILE").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate user profile directory".to_string())
+    });
     let loc = format!(r"{}\novus\", appdata);
+    let path = std::path::Path::new(loc.as_str());
+    if !path.exists() {
+        let _ = std::fs::create_dir(path);
+    }
+    let loc = format!(r"{}\novus\", user_profile);
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);
