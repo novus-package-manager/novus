@@ -107,8 +107,8 @@ Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environmen
     ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};C:\Program Files (x86)\{#MyAppName}"; \
     Check: NeedsAddPath('C:\Program Files (x86)\{#MyAppName}')
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{%APPDATA}\novus\shims"; \
-    Check: NeedsAddPath('{%APPDATA}\novus\shims')
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{%USERPROFILE}\novus\shims"; \
+    Check: NeedsAddPath('{%USERPROFILE}\novus\shims')
     
 [Files]
 Source: "D:\prana\Programming\My Projects\novus-package-manager\novus\target\release\novus.exe"; DestDir: "{app}"; Flags: ignoreversion
