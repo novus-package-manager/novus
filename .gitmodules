@@ -1,0 +1,3 @@
+[submodule "mslnk"]
+	path = mslnk
+	url = https://github.com/novus-package-manager/mslnk.git
