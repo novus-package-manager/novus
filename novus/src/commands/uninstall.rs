@@ -1,11 +1,14 @@
+use std::path::Path;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::process;
 use std::vec;
+use std::fs;
 use utils::autoelevate::autoelevateuninstall;
 use utils::classes::package::Package;
 use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
+use utils::registry::get_unins_string;
 
 pub async fn uninstaller(packages: Vec<String>) -> i32 {
     let mut handles = vec![];
@@ -30,6 +33,8 @@ pub async fn uninstaller(packages: Vec<String>) -> i32 {
         let package: Package = get_package(pkg_clone.as_str()).await;
         let display_name = package.display_name;
         let package_name = package.package_name;
+        let exec_name = package.exec_name;
+        let portable = package.portable;
         let uswitch = package.uswitches.clone();
         if multi == false {
             println!(
@@ -39,7 +44,13 @@ pub async fn uninstaller(packages: Vec<String>) -> i32 {
             );
         }
         handles.push(std::thread::spawn(move || {
-            let code: i32 = uninstall(display_name, uswitch, package_name);
+            let code: i32;
+            if portable == Some(true) {
+                code = uninstall_portable(display_name, package_name, exec_name);
+            }
+            else {
+                code = uninstall(display_name, uswitch, package_name);
+            }
             code
         }));
     }
@@ -57,6 +68,54 @@ pub async fn uninstaller(packages: Vec<String>) -> i32 {
     if codes.contains(&1) {
         return 1;
     }
+
+    0
+}
+
+fn uninstall_portable(display_name: String, package_name: String, exec_name: String) -> i32 {
+    let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate appdata directory".to_string())
+    });
+
+    let user_profile = std::env::var("USERPROFILE").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate user profile directory".to_string())
+    });
+
+    // Remove Shortcut
+    let star_menu_loc = format!(r"{}\Microsoft\Windows\Start Menu\Programs\Novus", appdata);
+    let start_menu_dir = Path::new(&star_menu_loc);
+    for entry in fs::read_dir(start_menu_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string())) {
+        let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let path = entry.path();
+        let path_str = path.display().to_string();
+        if path_str.contains(&display_name) {
+            fs::remove_file(path).unwrap_or_else(|e| handle_error_and_exit(format!("Failed to remove shurtcut: {}", e.to_string())));
+        }
+    }
+
+    // Remove shims
+    let shims_dir = Path::new(&user_profile).join("novus").join("shims");
+    for entry in fs::read_dir(shims_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string())) {
+        let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let path = entry.path();
+        let path_str = path.display().to_string();
+        if path_str.contains(&exec_name) {
+            fs::remove_file(path).unwrap_or_else(|e| handle_error_and_exit(format!("Failed to remove shim: {}", e.to_string())));
+        }
+    }
+
+    // Remove tools
+    let tools_dir = Path::new(&user_profile).join("novus").join("tools");
+    for entry in fs::read_dir(tools_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string())) {
+        let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        let path = entry.path();
+        let path_str = path.display().to_string();
+        if path_str.contains(&package_name) {
+            fs::remove_dir_all(path).unwrap_or_else(|e| handle_error_and_exit(format!("Failed to remove tool: {}", e.to_string())));
+        }
+    }
+
+    println!("{}", "Successfully Uninstalled Packages".bright_purple());
 
     0
 }
@@ -91,23 +150,17 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
         }
     }
     uninstall_string = (split[0].to_string() + file_extension + "\"").replace("\"", "");
-    // println!("args: {:?}", args);
-    // println!("uninstall_string: {}", uninstall_string);
 
     let progress_bar = ProgressBar::new(9999999);
     let pb = progress_bar.clone();
 
     std::thread::spawn(move || {
         let mut text = String::new();
-        // if multi {
-        //     text = format!("{}", "Uninstalling Packages".bright_cyan());
-        // } else {
         text = format!(
             "{}{}",
             "Uninstalling ".bright_cyan(),
             display_name.bright_cyan()
         );
-        // }
 
         progress_bar.clone().set_style(
             ProgressStyle::default_spinner()
@@ -164,111 +217,4 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
     }
 
     code
-}
-
-pub fn get_unins_string(display_name: String) -> String {
-    use winreg::enums::*;
-    use winreg::RegKey;
-    // println!("display_name: {}", display_name);
-    let mut regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
-    let mut uninstall_string: String = "NULL".to_string();
-    for i in 0..2 {
-        if i == 1 {
-            regkey = RegKey::predef(HKEY_CURRENT_USER);
-        }
-        let path: RegKey = regkey
-            .open_subkey_with_flags(
-                "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-                KEY_READ,
-            )
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        for name in path
-            .enum_keys()
-            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
-        {
-            let unins_path: RegKey = regkey
-                .open_subkey(format!(
-                    "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
-                    name
-                ))
-                .unwrap_or(
-                    regkey
-                        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-                        .unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
-                );
-            let app_name: String = unins_path
-                .get_value("DisplayName")
-                .unwrap_or("NULL".to_string());
-            // println!("app name: {}", app_name);
-            if app_name
-                .to_lowercase()
-                .starts_with(display_name.to_lowercase().as_str())
-            {
-                uninstall_string = unins_path
-                    .get_value("UninstallString")
-                    .unwrap_or("NO_STRING".to_string());
-            }
-        }
-    }
-    regkey = RegKey::predef(HKEY_LOCAL_MACHINE);
-    if uninstall_string == "NULL".to_string() {
-        let path: RegKey = regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products").unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        for name in path
-            .enum_keys()
-            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
-        {
-            let unins_path: RegKey = regkey.open_subkey(format!("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\UserData\\S-1-5-18\\Products\\{}\\InstallProperties", name)).unwrap_or(regkey.open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall").unwrap_or_else(|e| handle_error_and_exit(e.to_string())));
-            let app_name: String = unins_path
-                .get_value("DisplayName")
-                .unwrap_or("NULL".to_string());
-            // println!("app name 2: {}", app_name);
-            if app_name
-                .to_lowercase()
-                .starts_with(display_name.to_lowercase().as_str())
-            {
-                uninstall_string = unins_path
-                    .get_value("UninstallString")
-                    .unwrap_or("NULL".to_string());
-            }
-        }
-    }
-
-    if uninstall_string == "NULL".to_string() {
-        let path: RegKey = regkey
-            .open_subkey("SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-            .unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        for name in path
-            .enum_keys()
-            .map(|x| x.unwrap_or_else(|e| handle_error_and_exit(e.to_string())))
-        {
-            let unins_path: RegKey = regkey
-                .open_subkey(format!(
-                    "SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{}",
-                    name
-                ))
-                .unwrap_or(
-                    regkey
-                        .open_subkey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-                        .unwrap_or_else(|e| handle_error_and_exit(e.to_string())),
-                );
-            let app_name: String = unins_path
-                .get_value("DisplayName")
-                .unwrap_or("NULL".to_string());
-            // println!("app name 3: {}", app_name);
-            if app_name
-                .to_lowercase()
-                .starts_with(display_name.to_lowercase().as_str())
-            {
-                uninstall_string = unins_path
-                    .get_value("UninstallString")
-                    .unwrap_or("NULL".to_string());
-            }
-        }
-    }
-
-    if uninstall_string == "NULL" {
-        handle_error_and_exit(format!("Failed to uninstall {}", display_name));
-    }
-
-    uninstall_string.replace("\\", "/")
 }
