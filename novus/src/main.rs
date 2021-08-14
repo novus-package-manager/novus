@@ -90,7 +90,7 @@ async fn main() {
             installer(packages, package_list, flags, false).await;
         }
         "uninstall" => {
-            code = uninstaller(packages, flags).await;
+            code = uninstaller(packages, flags, package_list).await;
         }
         "update" => {
             code = installer(packages, package_list, flags, true).await;

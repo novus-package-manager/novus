@@ -10,7 +10,35 @@ use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
 use utils::registry::get_unins_string;
 
-pub async fn uninstaller(packages: Vec<String>, flags: Vec<String>) -> i32 {
+pub async fn uninstaller(inital_packages: Vec<String>, flags: Vec<String>, package_list: Vec<&str>) -> i32 {
+    let mut no_color = false;
+    let mut portable_flag = false;
+    if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
+        no_color = true;
+    }
+    if flags.contains(&"--portable".to_string()) || flags.contains(&"-p".to_string()) {
+        portable_flag = true;
+    }
+
+    let mut packages: Vec<String> = inital_packages.clone();
+
+    if portable_flag {
+        for pkg in inital_packages {
+            let pkg_portable = pkg.clone() + "-portable";
+            let index = packages.iter().position(|x| *x == pkg.clone()).unwrap();
+            packages.remove(index);
+            if package_list.contains(&pkg_portable.as_str()) {
+                packages.push(pkg_portable)
+            }
+            else {
+                println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg.bright_red());
+                if packages.len() == 0 {
+                    process::exit(1);
+                }
+            }
+        }
+    }
+
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
@@ -49,7 +77,7 @@ pub async fn uninstaller(packages: Vec<String>, flags: Vec<String>) -> i32 {
                 code = uninstall_portable(display_name, package_name, exec_name);
             }
             else {
-                code = uninstall(display_name, uswitch, package_name);
+                code = uninstall(display_name, uswitch, package_name, no_color);
             }
             code
         }));
@@ -121,7 +149,7 @@ fn uninstall_portable(display_name: String, package_name: String, exec_name: Str
 }
 
 #[allow(unused_assignments)]
-pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: String) -> i32 {
+pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: String, no_color: bool) -> i32 {
     let mut uninstall_string = get_unins_string(display_name.clone());
 
     uninstall_string = uninstall_string.clone();
@@ -151,22 +179,36 @@ pub fn uninstall(display_name: String, uswitches: Vec<String>, package_name: Str
     }
     uninstall_string = (split[0].to_string() + file_extension + "\"").replace("\"", "");
 
-    let progress_bar = ProgressBar::new(9999999);
+    let progress_bar = ProgressBar::new(0);
     let pb = progress_bar.clone();
 
     std::thread::spawn(move || {
         let mut text = String::new();
-        text = format!(
-            "{}{}",
-            "Uninstalling ".bright_cyan(),
-            display_name.bright_cyan()
-        );
 
-        progress_bar.clone().set_style(
-            ProgressStyle::default_spinner()
-                .template(("{spinner:.green}".to_string() + format!(" {}", text).as_str()).as_str())
-                .tick_chars("-\\|/"),
-        );
+        if no_color {
+            text = format!(
+                "Uninstalling {}",
+                display_name
+            );
+            progress_bar.clone().set_style(
+                ProgressStyle::default_spinner()
+                    .template(("{spinner:.white}".to_string() + format!(" {}", text).as_str()).as_str())
+                    .tick_chars("-\\|/"),
+            );
+        }
+        else {
+            text = format!(
+                "{}{}",
+                "Uninstalling ".bright_cyan(),
+                display_name.bright_cyan()
+            );
+            progress_bar.clone().set_style(
+                ProgressStyle::default_spinner()
+                    .template(("{spinner:.green}".to_string() + format!(" {}", text).as_str()).as_str())
+                    .tick_chars("-\\|/"),
+            );
+        }
+    
         loop {
             progress_bar.inc(5);
             std::thread::sleep(std::time::Duration::from_millis(100))
