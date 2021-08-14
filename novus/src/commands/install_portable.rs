@@ -94,9 +94,7 @@ pub async fn portable_installer(
 
     let extract_dir = tools_dir.join(package_version);
 
-    if !extract_dir.exists() {
-        extract_file(zip_file, no_color, multi, display_name.clone(), extract_dir.clone()).await;
-    }
+    extract_file(zip_file, no_color, multi, display_name.clone(), extract_dir.clone()).await;
 
     let (shim, copy_dir): (PathBuf, PathBuf) = check_shims(shims_dir, extract_dir, exec_name);
 
@@ -121,17 +119,27 @@ pub async fn portable_installer(
 fn check_shims(
     shims_dir: PathBuf,
     extract_dir: PathBuf,
-    package_name: String,
+    exec_name: String,
 ) -> (PathBuf, PathBuf) {
     let mut files: Vec<String> = vec![];
-    let mut path: PathBuf = extract_dir.clone();
+    let mut path: &PathBuf = &extract_dir.clone();
+
+    let mut paths: Vec<PathBuf> = vec![];
+    let mut filepaths: Vec<PathBuf> = vec![];
 
     for entry in fs::read_dir(extract_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
     {
         let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
-        path = entry.path();
+        let path_temp = entry.path();
+        paths.push(path_temp.clone());
+        if path_temp.is_file() {
+            filepaths.push(path_temp);
+        }
     }
 
+    if paths.len() == 1 && filepaths.len() == 0 {
+        path = &paths[0];
+    }
     for entry in fs::read_dir(path.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
     {
         let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
@@ -147,11 +155,15 @@ fn check_shims(
         files_str.push(&files[i]);
     }
 
-    let file: &str = get_close_matches(&package_name, files_str.clone(), 1, 0.0)[0];
+    let compare_file = exec_name.clone() + ".exe";
+
+    let file: &str = get_close_matches(&compare_file, files_str.clone(), 1, 0.0)[0];
+
+    // println!("compare: {}\nfiles: {:?}\nmatch: {}", compare_file, files_str.clone(), file);
 
     let shim: PathBuf = path.join(file);
 
-    let copy_file = format!("{}.bat", package_name);
+    let copy_file = format!("{}.bat", exec_name);
 
     let copy_dir: PathBuf = shims_dir.join(copy_file);
 
@@ -266,15 +278,13 @@ async fn threadeddownload(
         if no_color {
             progress_bar.set_style(
                 ProgressStyle::default_bar()
-                    .template(
-                        "[{elapsed_precise}] [{wide_bar:.white}] {bytes}/{total_bytes} ({eta})",
-                    )
-                    .progress_chars("=>-"),
+                    .template(("Downloading".bright_cyan().to_string() + " [{wide_bar:.cyan}] {bytes}/{total_bytes}").as_str())
+                    .progress_chars("=> "),
             );
         } else {
             progress_bar.set_style(ProgressStyle::default_bar()
-            .template("[{elapsed_precise}] [{wide_bar:.cyan/blue/magenta}] {bytes}/{total_bytes} ({eta})")
-            .progress_chars("=>-"));
+            .template(("Downloading".bright_cyan().to_string() + " [{wide_bar:.cyan}] {bytes}/{total_bytes}").as_str())
+            .progress_chars("=> "));
         }
 
         for index in 0..threads {
