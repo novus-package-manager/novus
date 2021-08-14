@@ -77,8 +77,7 @@ Options:
     
   {} {} Disables colored output for installation.
   {} {} Installs a portable version of the package if it exists.
-  {} {} Disables progress bar for installation.
-  {} {} Displays verbose for installation."#,
+  {} {} Disables progress bar for installation."#,
         __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "install".bright_purple(),
@@ -90,8 +89,6 @@ Options:
         "(-p)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
-        "--verbose".bright_cyan(),
-        "(-v)".yellow(),
     );
     println!("{}", install);
 }
@@ -109,9 +106,7 @@ Usage: {} {} {} {}
 Options: 
     
   {} {} Disables colored output for uninstallation.  
-  {} {} Uninstalls a portable version of the package if it exists.
-  {} {} Disables progress bar for uninstallation.
-  {} {} Displays verbose for uninstallation."#,
+  {} {} Uninstalls a portable version of the package if it exists."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
         "novus".bright_green(),
         "uninstall".bright_purple(),
@@ -121,10 +116,6 @@ Options:
         "(-nc)".yellow(),
         "--portable".bright_cyan(),
         "(-p)".yellow(),
-        "--no-progress".bright_cyan(),
-        "(-np)".yellow(),
-        "--verbose".bright_cyan(),
-        "(-v)".yellow()
     );
     println!("{}", uninstall);
 }
@@ -142,19 +133,19 @@ Usage: {} {} {} {}
 Options: 
     
   {} {} Disables colored output while updating.
-  {} {} Disables progress bar while updating.
-  {} {} Displays verbose while updating."#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+  {} {} Updates a portable version of the package if it exists.
+  {} {} Disables progress bar while updating."#,
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "update".bright_purple(),
-        "[packages]".white(),
+        "[package]".white(),
         "[flags]".white(),
         "--no-color".bright_cyan(),
         "(-nc)".yellow(),
+        "--portable".bright_cyan(),
+        "(-p)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
-        "--verbose".bright_cyan(),
-        "(-v)".yellow(),
     );
     println!("{}", update);
 }
