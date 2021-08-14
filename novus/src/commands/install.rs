@@ -47,12 +47,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                 packages.push(pkg_portable)
             }
             else {
-                if no_color {
-                    println!("Couldn't find a portable version for {}", pkg)
-                }
-                else {
-                    println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg.bright_red())
-                }
+                println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg.bright_red());
                 if packages.len() == 0 {
                     process::exit(1);
                 }
@@ -82,11 +77,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
         multi = true;
     }
 
-    if no_color {
-        println!("Installing Packages");
-    } else {
-        println!("{}", "Installing Packages".bright_green());
-    }
+    println!("{}", "Installing Packages".bright_green());
 
     for pkg in packages.iter() {
         let mut max = true;
@@ -190,7 +181,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                     .await;
                 }
                 if !url.contains(".zip") {
-                    if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                    if !verify_checksum(loc.clone(), checksum.clone()) {
                         println!("{}", "Clearing cache and retrying".bright_blue());
                         utils::cache::clear_cache_for_package(&package_name);
                         threadeddownload(
@@ -202,7 +193,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                             no_color,
                         )
                         .await;
-                        if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                        if !verify_checksum(loc.clone(), checksum.clone()) {
                             println!(
                                 "{} {}",
                                 "Failed to Install".bright_red(),
@@ -223,7 +214,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                             desired_version.clone(),
                         );
                     }
-                    if !verify_checksum(loc.clone(), checksum.clone(), no_color) {
+                    if !verify_checksum(loc.clone(), checksum.clone()) {
                         println!(
                             "{} {}",
                             "Failed to Install".bright_red(),
@@ -522,11 +513,7 @@ pub async fn install(
             if e.to_string().contains("requires elevation") {
                 let package_ver = package_name + "@" + &version;
                 code = autoelevateinstall(package_ver);
-                if no_color {
-                    pb.println("Auto Elevating");
-                } else {
-                    pb.println(format!("{}", "Auto Elevating".bright_cyan()));
-                }
+                pb.println(format!("{}", "Auto Elevating".bright_cyan()));
                 pb.finish_and_clear();
                 process::exit(0)
             } else {
@@ -541,9 +528,9 @@ pub async fn install(
         if code == 1 {
             let error_message = String::from_utf8(output.stderr)
                 .unwrap_or("Failed to install packages".to_string());
-            install_fail(no_color, &error_message, pb);
+            install_fail(&error_message, pb);
         } else {
-            install_success(no_color, pb);
+            install_success(pb);
         }
 
         code
@@ -556,24 +543,16 @@ pub async fn install(
     code.unwrap_or_else(|_| handle_error_and_exit("Failed to retrieve exit code".to_string()))
 }
 
-fn install_fail(no_color: bool, msg: &str, pb: ProgressBar) {
-    if no_color {
-        pb.println(format!("{}", msg));
-    } else {
-        pb.println(format!("{}", msg.bright_red()))
-    }
+fn install_fail(msg: &str, pb: ProgressBar) {
+    pb.println(format!("{}", msg.bright_red()));
     pb.finish_and_clear();
     process::exit(0);
 }
 
-fn install_success(no_color: bool, pb: ProgressBar) {
-    if no_color {
-        pb.println("Successfully installed packages");
-    } else {
-        pb.println(format!(
-            "{}",
-            "Successfully installed packages".bright_magenta()
-        ));
-    }
+fn install_success(pb: ProgressBar) {
+    pb.println(format!(
+        "{}",
+        "Successfully installed packages".bright_magenta()
+    ));
     pb.finish_and_clear();
 }

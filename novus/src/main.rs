@@ -26,6 +26,8 @@ async fn main() {
     // Starts a timer
     let start = Instant::now();
 
+    colored::control::set_override(true);
+
     create_dirs();
 
     let update_available: bool = check_version().await;
@@ -77,6 +79,10 @@ async fn main() {
         package_list.clone(),
     );
 
+    if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
+        colored::control::set_override(false);
+    }
+
     let mut code = 0;
 
     match command {
@@ -84,7 +90,7 @@ async fn main() {
             installer(packages, package_list, flags, false).await;
         }
         "uninstall" => {
-            code = uninstaller(packages).await;
+            code = uninstaller(packages, flags).await;
         }
         "update" => {
             code = installer(packages, package_list, flags, true).await;

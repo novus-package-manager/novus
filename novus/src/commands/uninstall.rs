@@ -10,7 +10,7 @@ use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
 use utils::registry::get_unins_string;
 
-pub async fn uninstaller(packages: Vec<String>) -> i32 {
+pub async fn uninstaller(packages: Vec<String>, flags: Vec<String>) -> i32 {
     let mut handles = vec![];
     let mut sizes = vec![];
     let mut multi = false;
