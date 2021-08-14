@@ -75,7 +75,8 @@ Usage: {} {} {} {}
     
 Options:
     
-  {} {} Disables colored output for installation.  
+  {} {} Disables colored output for installation.
+  {} {} Installs a portable version of the package if it exists.
   {} {} Disables progress bar for installation.
   {} {} Displays verbose for installation."#,
         __VERSION__.bright_green().bold(),
@@ -85,6 +86,8 @@ Options:
         "[flags]".white(),
         "--no-color".bright_cyan(),
         "(-nc)".yellow(),
+        "--portable".bright_cyan(),
+        "(-p)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
         "--verbose".bright_cyan(),
@@ -106,6 +109,7 @@ Usage: {} {} {} {}
 Options: 
     
   {} {} Disables colored output for uninstallation.  
+  {} {} Uninstalls a portable version of the package if it exists.
   {} {} Disables progress bar for uninstallation.
   {} {} Displays verbose for uninstallation."#,
         format!("novus {}", __VERSION__.bright_green().bold()),
@@ -115,6 +119,8 @@ Options:
         "[flags]".white(),
         "--no-color".bright_cyan(),
         "(-nc)".yellow(),
+        "--portable".bright_cyan(),
+        "(-p)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
         "--verbose".bright_cyan(),

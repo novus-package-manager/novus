@@ -6,5 +6,4 @@ pub mod list;
 pub mod quit;
 pub mod search;
 pub mod uninstall;
-pub mod update;
 pub mod startup;

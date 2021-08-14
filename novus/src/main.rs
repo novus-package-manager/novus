@@ -81,13 +81,13 @@ async fn main() {
 
     match command {
         "install" => {
-            installer(packages, flags, false).await;
+            installer(packages, package_list, flags, false).await;
         }
         "uninstall" => {
             code = uninstaller(packages).await;
         }
         "update" => {
-            code = installer(packages, flags, true).await;
+            code = installer(packages, package_list, flags, true).await;
         }
         "list" => {
             list(package_list, flags, args).await;

@@ -18,10 +18,11 @@ use utils::registry::check_installed;
 use utils::{cache, checksum, get_package, handle_error};
 use zip::ZipArchive;
 
-pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) -> i32 {
+pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, flags: Vec<String>, update: bool) -> i32 {
     let mut no_progress = false;
     let mut no_color = false;
     let mut confirm = false;
+    let mut portable_flag = false;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
@@ -30,6 +31,33 @@ pub async fn installer(packages: Vec<String>, flags: Vec<String>, update: bool) 
     }
     if flags.contains(&"--yes".to_string()) || flags.contains(&"-y".to_string()) {
         confirm = true;
+    }
+    if flags.contains(&"--portable".to_string()) || flags.contains(&"-p".to_string()) {
+        portable_flag = true;
+    }
+
+    let mut packages: Vec<String> = inital_packages.clone();
+
+    if portable_flag {
+        for pkg in inital_packages {
+            let pkg_portable = pkg.clone() + "-portable";
+            let index = packages.iter().position(|x| *x == pkg.clone()).unwrap();
+            packages.remove(index);
+            if package_list.contains(&pkg_portable.as_str()) {
+                packages.push(pkg_portable)
+            }
+            else {
+                if no_color {
+                    println!("Couldn't find a portable version for {}", pkg)
+                }
+                else {
+                    println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg.bright_red())
+                }
+                if packages.len() == 0 {
+                    process::exit(1);
+                }
+            }
+        }
     }
 
     let mut handles = vec![];
