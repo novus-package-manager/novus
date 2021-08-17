@@ -343,7 +343,7 @@ pub async fn threadeddownload(
         if no_color {
             progress_bar.set_style(
                 ProgressStyle::default_bar()
-                    .template(("Downloading".bright_cyan().to_string() + " [{wide_bar:.cyan}] {bytes}/{total_bytes}").as_str())
+                    .template(("Downloading".bright_cyan().to_string() + " [{wide_bar:.white}] {bytes}/{total_bytes}").as_str())
                     .progress_chars("=> "),
             );
         } else {

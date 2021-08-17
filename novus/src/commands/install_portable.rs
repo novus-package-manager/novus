@@ -119,10 +119,10 @@ pub async fn portable_installer(
 fn check_shims(
     shims_dir: PathBuf,
     extract_dir: PathBuf,
-    exec_name: String,
+    mut exec_name: String,
 ) -> (PathBuf, PathBuf) {
     let mut files: Vec<String> = vec![];
-    let mut path: &PathBuf = &extract_dir.clone();
+    let mut path_initial: &PathBuf = &extract_dir.clone();
 
     let mut paths: Vec<PathBuf> = vec![];
     let mut filepaths: Vec<PathBuf> = vec![];
@@ -138,8 +138,19 @@ fn check_shims(
     }
 
     if paths.len() == 1 && filepaths.len() == 0 {
-        path = &paths[0];
+        path_initial = &paths[0];
     }
+
+    let mut path: PathBuf = path_initial.to_owned();
+
+    if exec_name.contains("\\") {
+        let path_split: Vec<&str> = exec_name.split("\\").collect();
+        for i in 0..path_split.len() - 1 {
+            path = path_initial.join(path_split[i]);
+        }
+        exec_name = path_split[path_split.len() - 1].to_string();
+    }    
+
     for entry in fs::read_dir(path.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()))
     {
         let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
@@ -166,6 +177,8 @@ fn check_shims(
     let copy_file = format!("{}.bat", exec_name);
 
     let copy_dir: PathBuf = shims_dir.join(copy_file);
+
+    // println!("shim: {}\ncopy_dir: {}", shim.display().to_string(), copy_dir.display().to_string());
 
     (shim, copy_dir)
 }
@@ -278,7 +291,7 @@ async fn threadeddownload(
         if no_color {
             progress_bar.set_style(
                 ProgressStyle::default_bar()
-                    .template(("Downloading".bright_cyan().to_string() + " [{wide_bar:.cyan}] {bytes}/{total_bytes}").as_str())
+                    .template(("Downloading".to_string() + " [{wide_bar:.white}] {bytes}/{total_bytes}").as_str())
                     .progress_chars("=> "),
             );
         } else {
