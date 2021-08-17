@@ -107,7 +107,7 @@ Options:
     
   {} {} Disables colored output for uninstallation.  
   {} {} Uninstalls a portable version of the package if it exists."#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "uninstall".bright_purple(),
         "[package]".white(),
@@ -165,7 +165,7 @@ Options:
   {} {} Displays package version along with the names.
   {} {} Displays only installed packages.
   {} {} Displays only local packages."#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "list".bright_purple(),
         "--all".bright_cyan(),
@@ -188,13 +188,14 @@ Novus Package Manager {}
 
 Provides information on a specific package.
 
-Usage: {} {}
+Usage: {} {} {}
 
 Options: 
   {} {} Displays info only local packages"#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
-        "list".bright_purple(),
+        "info".bright_purple(),
+        "[package]",
         "--local".bright_cyan(),
         "(-l)".yellow(),
     );
@@ -218,7 +219,7 @@ Commands:
 
 Options: 
   {} {} {} Displays help menu for a specific command"#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "startup".bright_purple(),
         "[command]".white(),
@@ -242,10 +243,10 @@ Novus Package Manager {}
 Searches for a package based on input.
 
 Usage: {} {} {}"#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "search".bright_purple(),
-        "7-zip".white(),
+        "[query]".white(),
     );
     println!("{}", search);
 }
@@ -263,10 +264,10 @@ Usage: {} {} {}
 Options:
   {} {} Accepts all prompts while quiting.
   {} {} Force quits the application."#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "quit".bright_purple(),
-        "7-zip".white(),
+        "[package]".white(),
         "--yes".bright_cyan(),
         "(-y)".yellow(),
         "--force".bright_cyan(),
@@ -289,11 +290,11 @@ Usage: {} {} {}
 
 Options:
   {} {} Accepts all prompts"#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus quit -f".bright_green(),
         "novus".bright_green(),
-        "quit".bright_purple(),
-        "7-zip".white(),
+        "forcequit".bright_purple(),
+        "[package]".white(),
         "--yes".bright_cyan(),
         "(-y)".yellow(),
     );
@@ -309,7 +310,7 @@ Novus Package Manager {}
 Clears novus cache.
 
 Usage: {} {}"#,
-        format!("novus {}", __VERSION__.bright_green().bold()),
+        __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "clean".bright_purple(),
     );
