@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Novus"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.1"
 #define MyAppPublisher "Pranav Doshi"
 #define MyAppURL "https://www.novuspkg.com/"
 #define MyAppExeName "novus.exe"
@@ -26,7 +26,7 @@ LicenseFile=D:\prana\Programming\My Projects\novus-package-manager\novus\LICENSE
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ; PrivilegesRequired=lowest
 OutputDir=D:\prana\Programming\My Projects\novus-package-manager\novus\dist
-OutputBaseFilename=Novus Setup
+OutputBaseFilename=Novus v1.1.1 Alpha Setup
 SetupIconFile=D:\prana\Pictures\novus\logo.ico
 Compression=lzma
 SolidCompression=yes
