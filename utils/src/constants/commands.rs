@@ -37,28 +37,17 @@ pub const ALL_COMMANDS: [&str; 19] = [
 ];
 
 #[allow(unused)]
-pub const INSTALL_FLAGS: [[&str; 2]; 9] = [
-  ["--verbose", "-v"],
-  ["--debug", "-d"],
+pub const INSTALL_FLAGS: [[&str; 2]; 4] = [
   ["--no-progress", "-np"],
   ["--no-color", "-nc"],
   ["--portable", "-p"],
-  ["--virus-check", "-vc"],
-  ["--yes", "-y"],
-  ["--single-threaded", "-s"],
-  ["--no-cache", "--no-cache"],
+  ["--multithreaded", "-m"],
 ];
 
 #[allow(unused)]
-pub const UNINSTALL_FLAGS: [[&str; 2]; 8] = [
-  ["--verbose", "-v"],
-  ["--debug", "-d"],
-  ["--no-progress", "-np"],
+pub const UNINSTALL_FLAGS: [[&str; 2]; 2] = [
   ["--no-color", "-nc"],
   ["--portable", "-p"],
-  ["--yes", "-y"],
-  ["--silent", "-s"],
-  ["--no-cache", "--no-cache"],
 ];
 
 #[allow(unused)]

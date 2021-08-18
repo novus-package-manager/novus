@@ -75,20 +75,23 @@ Usage: {} {} {} {}
     
 Options:
     
-  {} {} Disables colored output for installation.
   {} {} Installs a portable version of the package if it exists.
-  {} {} Disables progress bar for installation."#,
+  {} {} Disables colored output for installation.
+  {} {} Disables progress bar for installation.
+  {} {} Enables multithreaded download for faster installation."#,
         __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "install".bright_purple(),
         "[package]".white(),
         "[flags]".white(),
-        "--no-color".bright_cyan(),
-        "(-nc)".yellow(),
         "--portable".bright_cyan(),
         "(-p)".yellow(),
+        "--no-color".bright_cyan(),
+        "(-nc)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
+        "--multithreaded".bright_cyan(),
+        "(-m)".yellow(),
     );
     println!("{}", install);
 }

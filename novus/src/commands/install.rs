@@ -23,6 +23,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
     let mut no_color = false;
     let mut confirm = false;
     let mut portable_flag = false;
+    let mut multithreaded = false;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
@@ -34,6 +35,9 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
     }
     if flags.contains(&"--portable".to_string()) || flags.contains(&"-p".to_string()) {
         portable_flag = true;
+    }
+    if flags.contains(&"--multithreaded".to_string()) || flags.contains(&"-m".to_string()) {
+        multithreaded = true;
     }
 
     let mut packages: Vec<String> = inital_packages.clone();
@@ -130,7 +134,10 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
             }
             let latest_version = package.latest_version;
             let display_name = package.display_name;
-            let threads = package.threads;
+            let mut threads = 1;
+            if multithreaded {
+                threads = package.threads;
+            }
             if !update {
                 if desired_version == "0" {
                     desired_version = latest_version.to_string();
