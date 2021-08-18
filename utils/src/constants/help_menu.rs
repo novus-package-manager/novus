@@ -137,7 +137,8 @@ Options:
     
   {} {} Disables colored output while updating.
   {} {} Updates a portable version of the package if it exists.
-  {} {} Disables progress bar while updating."#,
+  {} {} Disables progress bar while updating.
+  {} {} Enables multithreaded download for faster installation."#,
         __VERSION__.bright_green().bold(),
         "novus".bright_green(),
         "update".bright_purple(),
@@ -149,6 +150,8 @@ Options:
         "(-p)".yellow(),
         "--no-progress".bright_cyan(),
         "(-np)".yellow(),
+        "--multithreaded".bright_cyan(),
+        "(-m)".yellow(),
     );
     println!("{}", update);
 }
