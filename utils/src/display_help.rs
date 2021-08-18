@@ -10,6 +10,17 @@ use colored::Colorize;
 pub async fn display_help(args: &Vec<String>) -> &String {
     if args.len() == 1 {
         about();
+
+        let update_available = check_version().await;
+
+        if update_available {
+            println!(
+                "\n{} A new version of Novus is available. Run {} to update.",
+                "NOTE".bright_cyan(),
+                "novus update novus".bright_cyan()
+            );
+        }
+        
         std::process::exit(0);
     } else if args.len() == 2 {
         let mut command: &str = args[1].as_str();
