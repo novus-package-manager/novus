@@ -40,14 +40,25 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
 
     if portable_flag {
         for pkg in inital_packages {
-            let pkg_portable = pkg.clone() + "-portable";
+            let mut name: &str = &pkg;
+            let mut version: &str = "0";
+
+            if pkg.contains("@") {
+                let version_split: Vec<&str> = pkg.split("@").collect();
+                name = version_split[0];
+                version = version_split[1];
+            }
+
+            let pkg_portable = name.clone().to_string() + "-portable";
+            let pkg_portable_version = name.clone().to_string() + "-portable@" + version;
             let index = packages.iter().position(|x| *x == pkg.clone()).unwrap();
             packages.remove(index);
+
             if package_list.contains(&pkg_portable.as_str()) {
-                packages.push(pkg_portable)
+                packages.push(pkg_portable_version.to_string())
             }
             else {
-                println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg.bright_red());
+                println!("{} {}", "Couldn't find a portable package for".bright_red(), pkg_portable.bright_red());
                 if packages.len() == 0 {
                     process::exit(1);
                 }
@@ -98,7 +109,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
         }
 
         if portable == Some(true) {
-            portable_installer(package, update, no_color, no_progress, max_size, multi).await;
+            portable_installer(package, update, no_color, no_progress, max_size, multi, desired_version).await;
         } else {
             if !confirm && !update {
                 if check_installed(package.display_name.clone()) {

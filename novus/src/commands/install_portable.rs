@@ -19,6 +19,7 @@ pub async fn portable_installer(
     no_progress: bool,
     max_size: u64,
     multi: bool,
+    mut desired_version: String,
 ) {
     let package_name = package.package_name;
     let display_name = package.display_name;
@@ -46,7 +47,6 @@ pub async fn portable_installer(
         fs::create_dir(shims_dir.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
     }
 
-    let mut desired_version = "0".to_string();
     let mut max = true;
 
     if !update {
@@ -90,7 +90,7 @@ pub async fn portable_installer(
 
     let zip_file = File::open(output.clone()).unwrap();
 
-    let package_version = format!("{}@{}", package_name, latest_version);
+    let package_version = format!("{}@{}", package_name, desired_version);
 
     let extract_dir = tools_dir.join(package_version);
 
