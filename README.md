@@ -1,37 +1,47 @@
 # Novus
-A blazingly fast and efficient package manager for windows.
+A blazingly fast and futuristic package manager for windows.
 
 # Why Novus
 
-### Swift
+### Fast
 
-Unlike any other package manager, Novus uses multithreaded downloads making the download speeds 8 times faster.
+Using Novus, you can install packages using multiple threads, making it around 8 times faster than normal downloads.
 
-### Efficient
+### Silent Installations
 
-Apart from being extremely fast, Novus also installs and uninstalls packages concurrently, making it as efficient as possible.
+Novus installs apps silently, in a manner such that users don't need to accept any prompts during the installation.
 
-### Authentic
+### Non-Admin Installations
 
-Not only are all of Novus’s packages are monitored regularly, but all of them are always up to date and trusted by the community.
+Novus supports non-admin installations. You don't have to go through the effort of opening a separate admin terminal.
 
-# Features
+### Portable Installations
 
-Unlike most package managers, Novus can do much more than just installing and uninstalling applications.
+Novus supports the installation of portable packages.
 
-Here are the various commands that novus can perform.
+### Open Source
 
-- Install
-- Uninstall
-- Update
-- List
-- Search
-- Clean
-- Quit
-- Forcequit
-- Info
+Novus is open-source, making it easier to contribute and add packages to the manifest.
 
-Run **novus -h** for a detailed description of each command.
+### Package Manifests
+
+All of Novus's packages are updated and monitored daily, using a fail-safe auto-updating script.
+
+# Difference from Chocolatey
+
+### Speed
+
+Novus is significantly faster than chocolatey due to it's multithreaded nature.
+
+<img src="https://i.imgur.com/wSj375R.png" />
+
+### Non-Admin Installations
+
+Using Novus, you can install packages without having to use an admin terminal. Novus automatically elevates to an admin terminal without bypassing UAC.
+
+### Additional Features
+
+Novus has a lot of other useful features. For example, Novus can easily quit and forcequit applications with just one command.
 
 # Installation
 
