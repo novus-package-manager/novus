@@ -22,7 +22,7 @@ use utils::{display_help, get_package, handle_args, handle_error::handle_error_a
 #[allow(unused)]
 #[tokio::main]
 async fn main() {
-    let _enabled = ansi_term::enable_ansi_support();
+    // let _enabled = ansi_term::enable_ansi_support();
 
     // Starts a timer
     let start = Instant::now();
@@ -31,7 +31,11 @@ async fn main() {
 
     create_dirs();
 
-    let update_available: bool = check_version().await;
+    let mut update_available = false;
+
+    let check_updates = tokio::spawn(async move {
+        update_available = check_version().await;
+    });
 
     ctrlc::set_handler(move || {
         println!("\n{}", "Aborted!".bright_cyan());
