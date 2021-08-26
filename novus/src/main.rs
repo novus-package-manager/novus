@@ -1,6 +1,6 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, uninstall};
+use commands::{clean, info, install, list, quit, search, uninstall, config};
 use display_help::display_help;
 
 use clean::clean;
@@ -13,6 +13,7 @@ use search::search;
 use serde_json::Value;
 use std::time::Instant;
 use uninstall::uninstaller;
+use config::config;
 use utils::check_version::check_version;
 use utils::constants::commands::COMMANDS;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
@@ -112,6 +113,9 @@ async fn main() {
         }
         "info" => {
             info(args, package_list).await;
+        }
+        "config" => {
+            config(args, flags).await;
         }
         &_ => {}
     }

@@ -20,6 +20,7 @@ Commands:
   {} {} {} Clears all cache.
   {} {} {} Quits an application or a list of applications.
   {} {} {} Forcequits an application or a list of applications.
+  {} {} Customizes Novus configuration.
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -52,6 +53,8 @@ Run {} for more info about each command."#,
         "*".bright_magenta().bold(),
         "forcequit".bright_cyan(),
         "(forcequit)".yellow(),
+        "*".bright_magenta().bold(),
+        "config".bright_cyan(),
         "novus [command] --help".bright_green(),
     );
 
@@ -258,6 +261,37 @@ Usage: {} {} {}"#,
 }
 
 #[allow(unused)]
+pub fn config_help() {
+    let config = format!(
+        r#"
+Novus Package Manager {}
+
+Customizes Novus configuration.
+
+Usage: {} {} {} {}
+
+Flags:
+  {} Changes default threads during downloads.
+  {} Changes default colored output during installation.
+  {} Changes default progress indicator during installation.
+  {} Changes default installation method.
+
+Run {} for more info about each command."#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "config".bright_purple(),
+        "[flag]".white(),
+        "[value]".white(),
+        "multithreaded".bright_cyan(),
+        "no-color".bright_cyan(),
+        "no-progress".bright_cyan(),
+        "portable".bright_cyan(),
+        "novus config [flag] --help".bright_green()
+    );
+    println!("{}", config);
+}
+
+#[allow(unused)]
 pub fn quit_help() {
     let quit = format!(
         r#"
@@ -338,6 +372,23 @@ Novus Package Manager {}
         "novus install --help".bright_green()
     );
     println!("{}", install_error);
+}
+
+#[allow(unused)]
+pub fn config_error() {
+    let config_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing flag to change value for.
+    
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus config --help".bright_green()
+    );
+    println!("{}", config_error);
 }
 
 #[allow(unused)]

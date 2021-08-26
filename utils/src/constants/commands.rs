@@ -36,6 +36,13 @@ pub const ALL_COMMANDS: [&str; 19] = [
   "startup",
 ];
 
+pub const CONFIG_FLAGS: [&str; 4] = [
+  "multithreaded",
+  "no-color",
+  "no-progress",
+  "portable",
+];
+
 #[allow(unused)]
 pub const INSTALL_FLAGS: [[&str; 2]; 4] = [
   ["--no-progress", "-np"],

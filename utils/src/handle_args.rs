@@ -17,7 +17,7 @@ pub fn verify_args(
     let mut new_flags: Vec<String> = flags.clone();
     let mut new_packages: Vec<String> = packages.clone();
 
-    if command != "search" && command != "list" && command != "info" && command != "startup" {
+    if command != "search" && command != "list" && command != "info" && command != "startup" && command != "config" {
         new_packages = vec![];
         new_flags = vec![];
         for pkg in packages.iter() {
