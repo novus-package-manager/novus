@@ -106,6 +106,33 @@ Options:
 }
 
 #[allow(unused)]
+pub fn config_confirm_help() {
+    let config_help = format!(
+        r#"
+Novus Package Manager {}
+
+Does not prompt for confirmation.
+
+Usage: {} {} {} {}
+
+Options: 
+  {} {} Always installs portable versions of the package.
+  {} {} Does not install portable versions of the package."#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "config".bright_purple(),
+        "confirm".white(),
+        "[yes/no]".white(),
+        "--yes".bright_cyan(),
+        "(-y)".yellow(),
+        "--no".bright_cyan(),
+        "(-n)".yellow(),
+    );
+    println!("{}", config_help);
+}
+
+
+#[allow(unused)]
 pub fn config_error_value() {
     let config_error = format!(
         r#"

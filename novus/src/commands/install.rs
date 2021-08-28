@@ -17,13 +17,14 @@ use utils::classes::package::Package;
 use utils::registry::check_installed;
 use utils::{cache, checksum, get_package, handle_error};
 use zip::ZipArchive;
+use utils::classes::config::Config;
 
-pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, flags: Vec<String>, update: bool) -> i32 {
-    let mut no_progress = false;
-    let mut no_color = false;
-    let mut confirm = false;
-    let mut portable_flag = false;
-    let mut multithreaded = false;
+pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, flags: Vec<String>, update: bool, config: Config) -> i32 {
+    let mut no_progress = config.no_progress;
+    let mut no_color = config.no_color;
+    let mut confirm = config.confirm;
+    let mut portable_flag = config.portable;
+    let mut multithreaded = config.multithreaded;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }

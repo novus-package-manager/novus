@@ -1,6 +1,6 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, uninstall, config};
+use commands::{clean, info, install, list, quit, search, uninstall};
 use display_help::display_help;
 
 use clean::clean;
@@ -13,7 +13,7 @@ use search::search;
 use serde_json::Value;
 use std::time::Instant;
 use uninstall::uninstaller;
-use config::config;
+use utils::classes::config::Config;
 use utils::check_version::check_version;
 use utils::constants::commands::COMMANDS;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
@@ -22,7 +22,7 @@ use utils::{display_help, get_package, handle_args, handle_error::handle_error_a
 #[allow(unused)]
 #[tokio::main]
 async fn main() {
-    // let _enabled = ansi_term::enable_ansi_support();
+    ansi_term::enable_ansi_support();
 
     // Starts a timer
     let start = Instant::now();
@@ -30,6 +30,8 @@ async fn main() {
     colored::control::set_override(true);
 
     create_dirs();
+
+    let config: Config = get_config();
 
     let mut update_available = false;
 
@@ -84,7 +86,7 @@ async fn main() {
         package_list.clone(),
     );
 
-    if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
+    if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) || config.no_color {
         colored::control::set_override(false);
     }
 
@@ -92,13 +94,13 @@ async fn main() {
 
     match command {
         "install" => {
-            installer(packages, package_list, flags, false).await;
+            installer(packages, package_list, flags, false, config).await;
         }
         "uninstall" => {
-            code = uninstaller(packages, flags, package_list).await;
+            code = uninstaller(packages, flags, package_list, config).await;
         }
         "update" => {
-            code = installer(packages, package_list, flags, true).await;
+            code = installer(packages, package_list, flags, true, config).await;
         }
         "list" => {
             list(package_list, flags, args).await;
@@ -119,7 +121,7 @@ async fn main() {
             info(args, package_list).await;
         }
         "config" => {
-            config(args, flags).await;
+            commands::config::config(args, flags).await;
         }
         &_ => {}
     }
@@ -176,4 +178,39 @@ fn create_dirs() {
         std::fs::write(path, AUTO_ELEVATE_UNINSTALL)
             .unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
+}
+
+fn get_config() -> Config {
+    let appdata = std::env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate appdata directory".to_string())
+    });
+    let loc = format!(r"{}\novus\config", appdata);
+    let path = std::path::Path::new(loc.as_str());
+    if !path.exists() {
+        let _ = std::fs::create_dir(path);
+    }
+
+    let loc = format!(r"{}\novus\config\config.json", appdata);
+    let path = std::path::Path::new(loc.as_str());
+
+    if !path.exists() {
+        let config_json = Config {
+            multithreaded: false,
+            no_color: false,
+            no_progress: false,
+            portable: false,
+            confirm: false,
+        };
+
+        let config_file = std::fs::File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to create config file".to_string()));
+
+        serde_json::to_writer_pretty(config_file, &config_json).unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
+
+        return config_json
+    }
+
+    let contents: String = serde_json::to_string(&path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+    let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to read config file".to_string()));
+    
+    config
 }

@@ -1,3 +1,9 @@
+pub const CONFIG_JSON: &str = "
+{
+    
+}
+";
+
 pub const AUTO_ELEVATE_INSTALL: &str = "
 @echo off
 

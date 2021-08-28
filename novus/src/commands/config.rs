@@ -1,4 +1,3 @@
-use colored::Colorize;
 use utils::constants::commands::CONFIG_FLAGS;
 use utils::constants::config_menu::*;
 use std::process;
@@ -12,10 +11,12 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
 
     // Validate value
     validate_value(&value);
+
+    process::exit(0)
 }
 
 fn validate_value(value: &str) {
-    if value == "yes" || value == "no" {
+    if value == "true" || value == "false" {
         return;
     }
     else {

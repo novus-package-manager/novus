@@ -19,8 +19,8 @@ Commands:
   {} {} {} Provides information on a specific package.
   {} {} {} Clears all cache.
   {} {} {} Quits an application or a list of applications.
-  {} {} {} Forcequits an application or a list of applications.
-  {} {} Customizes Novus configuration.
+  {} {} Forcequits an application or a list of applications.
+  {} {} {} Customizes Novus configuration.
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -52,9 +52,9 @@ Run {} for more info about each command."#,
         "(exit)".yellow(),
         "*".bright_magenta().bold(),
         "forcequit".bright_cyan(),
-        "(forcequit)".yellow(),
         "*".bright_magenta().bold(),
         "config".bright_cyan(),
+        "(global)".yellow(),
         "novus [command] --help".bright_green(),
     );
 
@@ -275,6 +275,7 @@ Flags:
   {} Changes default colored output during installation.
   {} Changes default progress indicator during installation.
   {} Changes default installation method.
+  {} Does not prompt for confirmation.
 
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -286,6 +287,7 @@ Run {} for more info about each command."#,
         "no-color".bright_cyan(),
         "no-progress".bright_cyan(),
         "portable".bright_cyan(),
+        "confirm".bright_cyan(),
         "novus config [flag] --help".bright_green()
     );
     println!("{}", config);

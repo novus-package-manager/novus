@@ -9,10 +9,11 @@ use utils::classes::package::Package;
 use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
 use utils::registry::get_unins_string;
+use utils::classes::config::Config;
 
-pub async fn uninstaller(inital_packages: Vec<String>, flags: Vec<String>, package_list: Vec<&str>) -> i32 {
-    let mut no_color = false;
-    let mut portable_flag = false;
+pub async fn uninstaller(inital_packages: Vec<String>, flags: Vec<String>, package_list: Vec<&str>, config: Config) -> i32 {
+    let mut no_color = config.no_color;
+    let mut portable_flag = config.portable;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
