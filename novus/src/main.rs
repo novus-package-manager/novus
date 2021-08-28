@@ -208,9 +208,9 @@ fn get_config() -> Config {
 
         return config_json
     }
-
-    let contents: String = serde_json::to_string(&path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
-    let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to read config file".to_string()));
-    
-    config
+    else {
+        let contents = std::fs::read_to_string(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+        let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
+        return config
+    }
 }

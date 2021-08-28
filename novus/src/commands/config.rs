@@ -1,6 +1,12 @@
 use utils::constants::commands::CONFIG_FLAGS;
+use utils::handle_error::handle_error_and_exit;
 use utils::constants::config_menu::*;
 use std::process;
+use std::path::Path;
+use std::env;
+use std::fs::File;
+use utils::classes::config::Config;
+use colored::Colorize;
 
 #[allow(unused)]
 pub async fn config(args: Vec<String>, flags: Vec<String>) {
@@ -10,14 +16,56 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
     handle_help_menu(&command, flags);
 
     // Validate value
-    validate_value(&value);
+    let value = validate_value(&value);
 
-    process::exit(0)
+    // Get Config File
+    let (mut config, file) = get_config();
+
+    // Edit Config
+    if command == "multithreaded" {
+        config.multithreaded = value;
+    }
+    if command == "no-color" {
+        config.no_color = value;
+    }
+    if command == "no-progress" {
+        config.no_progress = value;
+    }
+    if command == "portable" {
+        config.portable = value;
+    }
+    if command == "confirm" {
+        config.confirm = value;
+    }
+
+    // Write Config File
+    serde_json::to_writer_pretty(file, &config).unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
+
+    // Confirmation Message
+    println!("{}", "Successfully Updated Configuration".bright_green());
 }
 
-fn validate_value(value: &str) {
-    if value == "true" || value == "false" {
-        return;
+fn get_config() -> (Config, File) {
+    let appdata = env::var("APPDATA").unwrap_or_else(|_| {
+        handle_error_and_exit("Failed to locate appdata directory".to_string())
+    });
+    let loc = format!(r"{}\novus\config\config.json", appdata);
+    let path = Path::new(loc.as_str());
+    let contents = std::fs::read_to_string(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+    let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
+
+    let file = File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+
+    (config, file)
+}
+
+fn validate_value(value: &str) -> bool{
+    let value = value.to_lowercase();
+    if value == "true" || value == "yes" {
+        return true;
+    }
+    else if value == "false" || value == "no" {
+        return false;
     }
     else {
         config_error_value();
