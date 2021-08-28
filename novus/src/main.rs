@@ -112,10 +112,10 @@ async fn main() {
             search(package_list, flags, &packages[0]).await;
         }
         "quit" => {
-            quit(packages, flags, false).await;
+            quit(packages, flags, false, config).await;
         }
         "forcequit" => {
-            quit(packages, flags, true).await;
+            quit(packages, flags, true, config).await;
         }
         "info" => {
             info(args, package_list).await;

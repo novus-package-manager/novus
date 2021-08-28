@@ -3,9 +3,10 @@ use std::{io::prelude::*, process};
 use utils::classes::package::Package;
 use utils::get_package::get_package;
 use utils::handle_error::handle_error_and_exit;
+use utils::classes::config::Config;
 
-pub async fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool) {
-    let mut confirm = false;
+pub async fn quit(apps: Vec<String>, flags: Vec<String>, mut force: bool, config: Config) {
+    let mut confirm = config.confirm;
     if flags.contains(&"-f".to_string()) || flags.contains(&"--force".to_string()) {
         force = true;
     }
