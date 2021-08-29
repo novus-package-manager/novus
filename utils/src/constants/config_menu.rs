@@ -18,11 +18,11 @@ Options:
         "novus".bright_green(),
         "config".bright_purple(),
         "multithreaded".white(),
-        "[yes/no]".white(),
-        "--yes".bright_cyan(),
-        "(-y)".yellow(),
-        "--no".bright_cyan(),
-        "(-n)".yellow(),
+        "[true/false]".white(),
+        "true".bright_cyan(),
+        "(yes)".yellow(),
+        "false".bright_cyan(),
+        "(no)".yellow(),
     );
     println!("{}", config_help);
 }
@@ -44,11 +44,11 @@ Options:
         "novus".bright_green(),
         "config".bright_purple(),
         "no-color".white(),
-        "[yes/no]".white(),
-        "--yes".bright_cyan(),
-        "(-y)".yellow(),
-        "--no".bright_cyan(),
-        "(-n)".yellow(),
+        "[true/false]".white(),
+        "true".bright_cyan(),
+        "(yes)".yellow(),
+        "false".bright_cyan(),
+        "(no)".yellow(),
     );
     println!("{}", config_help);
 }
@@ -70,11 +70,11 @@ Options:
         "novus".bright_green(),
         "config".bright_purple(),
         "no-progress".white(),
-        "[yes/no]".white(),
-        "--yes".bright_cyan(),
-        "(-y)".yellow(),
-        "--no".bright_cyan(),
-        "(-n)".yellow(),
+        "[true/false]".white(),
+        "true".bright_cyan(),
+        "(yes)".yellow(),
+        "false".bright_cyan(),
+        "(no)".yellow(),
     );
     println!("{}", config_help);
 }
@@ -96,11 +96,11 @@ Options:
         "novus".bright_green(),
         "config".bright_purple(),
         "portable".white(),
-        "[yes/no]".white(),
-        "--yes".bright_cyan(),
-        "(-y)".yellow(),
-        "--no".bright_cyan(),
-        "(-n)".yellow(),
+        "[true/false]".white(),
+        "true".bright_cyan(),
+        "(yes)".yellow(),
+        "false".bright_cyan(),
+        "(no)".yellow(),
     );
     println!("{}", config_help);
 }
@@ -122,11 +122,11 @@ Options:
         "novus".bright_green(),
         "config".bright_purple(),
         "confirm".white(),
-        "[yes/no]".white(),
-        "--yes".bright_cyan(),
-        "(-y)".yellow(),
-        "--no".bright_cyan(),
-        "(-n)".yellow(),
+        "[true/false]".white(),
+        "true".bright_cyan(),
+        "(yes)".yellow(),
+        "false".bright_cyan(),
+        "(no)".yellow(),
     );
     println!("{}", config_help);
 }
@@ -181,7 +181,7 @@ Novus Package Manager {}
         __VERSION__.bright_green().bold(),
         "error".bright_red(),
         "info".bright_blue(),
-        "novus config --help".bright_green()
+        "novus config [flag] --help".bright_green()
     );
     println!("{}", config_error);
 }

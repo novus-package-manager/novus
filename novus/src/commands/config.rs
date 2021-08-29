@@ -126,6 +126,7 @@ fn parse_args(args: Vec<String>) -> (String, String) {
     {
         if args.len() <= 3 {
             config_error_flag();
+            process::exit(1);
         } else {
             value = &args[3];
         }

@@ -36,11 +36,12 @@ pub const ALL_COMMANDS: [&str; 19] = [
   "startup",
 ];
 
-pub const CONFIG_FLAGS: [&str; 6] = [
+pub const CONFIG_FLAGS: [&str; 7] = [
   "multithreaded",
   "no-color",
   "no-progress",
   "portable",
+  "confirm",
   "reset",
   "default",
 ];
