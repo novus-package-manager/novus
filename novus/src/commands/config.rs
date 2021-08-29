@@ -10,13 +10,17 @@ use colored::Colorize;
 
 #[allow(unused)]
 pub async fn config(args: Vec<String>, flags: Vec<String>) {
-    let (command, value) = parse_args(args);    
+    let (command, old_value) = parse_args(args);    
     
     // Handle help menus
     handle_help_menu(&command, flags);
 
     // Validate value
-    let value = validate_value(&value);
+    let mut value = false;
+    if command != "reset" && command != "default"
+    {
+        value = validate_value(&old_value);
+    }   
 
     // Get Config File
     let (mut config, file) = get_config();
@@ -36,6 +40,15 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
     }
     if command == "confirm" {
         config.confirm = value;
+    }
+
+    // Reset config to defaults
+    if command == "reset" || command == "default" {
+        config.multithreaded = false;
+        config.no_color = false;
+        config.no_progress = false;
+        config.portable = false;
+        config.confirm = false;
     }
 
     // Write Config File
@@ -59,7 +72,7 @@ fn get_config() -> (Config, File) {
     (config, file)
 }
 
-fn validate_value(value: &str) -> bool{
+fn validate_value(value: &str) -> bool {
     let value = value.to_lowercase();
     if value == "true" || value == "yes" {
         return true;
@@ -97,11 +110,14 @@ fn parse_args(args: Vec<String>) -> (String, String) {
         process::exit(1);
     }
 
-    if args.len() <= 3 {
-        config_error_flag();
-    } else {
-        value = &args[3];
-    }
+    if command != "reset" && command != "default"
+    {
+        if args.len() <= 3 {
+            config_error_flag();
+        } else {
+            value = &args[3];
+        }
+    } 
 
     (command.to_owned(), value.to_string())
 }

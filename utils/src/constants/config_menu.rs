@@ -138,7 +138,7 @@ pub fn config_error_value() {
         r#"
 Novus Package Manager {}
 
-{} Unkown value specified.
+{} Unknown value specified.
     
 {} Use {} for more information about this command."#,
         __VERSION__.bright_green().bold(),
