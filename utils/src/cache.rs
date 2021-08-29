@@ -21,7 +21,19 @@ pub fn clear_cache() {
     let loc = format!("{}/novus", appdata);
     let novus_dir = Path::new(&loc);
     if novus_dir.exists() {
-        fs::remove_dir_all(novus_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+        for entry in fs::read_dir(&novus_dir).unwrap_or_else(|e| handle_error_and_exit(e.to_string())) {
+            let entry = entry.unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+            let path = entry.path();
+            let path_str = path.display().to_string();
+            if !path_str.contains("config") && !path_str.contains("scripts") {
+                if path.is_dir() {
+                    fs::remove_dir_all(path.clone()).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+                }
+                if path.is_file() {
+                    fs::remove_file(path).unwrap_or_else(|e| handle_error_and_exit(e.to_string()));
+                }
+            }
+        }
     }
 }
 
