@@ -97,6 +97,18 @@ fn handle_help_menu(command: &str, flags: Vec<String>) {
         if command == "no-progress" {
             config_no_progress_help();        
         }
+        if command == "portable" {
+            config_portable_help();        
+        }
+        if command == "confirm" {
+            config_confirm_help();       
+        }
+        if command == "reset" {
+            config_reset_help();
+        }
+        if command == "default" {
+            config_reset_help();     
+        }
         process::exit(0);
     }
 }

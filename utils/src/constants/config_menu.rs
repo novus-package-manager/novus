@@ -131,6 +131,26 @@ Options:
     println!("{}", config_help);
 }
 
+#[allow(unused)]
+pub fn config_reset_help() {
+    let config_help = format!(
+        r#"
+Novus Package Manager {}
+
+Does not prompt for confirmation.
+
+Usage: {} {} {}
+
+Alias: {}"#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "config".bright_purple(),
+        "reset".white(),
+        "default".bright_cyan(),
+    );
+    println!("{}", config_help);
+}
+
 
 #[allow(unused)]
 pub fn config_error_value() {

@@ -276,6 +276,7 @@ Flags:
   {} Changes default progress indicator during installation.
   {} Changes default installation method.
   {} Does not prompt for confirmation.
+  {} {} Resets configuration to default parameters.
 
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -288,6 +289,8 @@ Run {} for more info about each command."#,
         "no-progress".bright_cyan(),
         "portable".bright_cyan(),
         "confirm".bright_cyan(),
+        "reset".bright_cyan(),
+        "(default)".yellow(),
         "novus config [flag] --help".bright_green()
     );
     println!("{}", config);
