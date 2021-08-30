@@ -10,14 +10,14 @@ use colored::Colorize;
 
 #[allow(unused)]
 pub async fn config(args: Vec<String>, flags: Vec<String>) {
-    let (command, old_value) = parse_args(args);    
+    let (command, old_value) = parse_args(args);
     
     // Handle help menus
     handle_help_menu(&command, flags);
 
     // Validate value
     let mut value = false;
-    if command != "reset" && command != "default"
+    if command != "reset" && command != "default" && command != "list"
     {
         value = validate_value(&old_value);
     }   
@@ -51,11 +51,24 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
         config.confirm = false;
     }
 
+    // List config
+    if command == "list" {
+        println!("{}{}", "multithreaded: ".bright_cyan(), config.multithreaded);
+        println!("{}{}", "no-color: ".bright_cyan(), config.no_color);
+        println!("{}{}", "no-progress: ".bright_cyan(), config.no_progress);
+        println!("{}{}", "portable: ".bright_cyan(), config.portable);
+        println!("{}{}", "confirm: ".bright_cyan(), config.confirm);
+    }
+
     // Write Config File
     serde_json::to_writer_pretty(file, &config).unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
 
     // Confirmation Message
-    println!("{}", "Successfully Updated Configuration".bright_green());
+    if command != "list" {
+        println!("{}", "Successfully Updated Configuration".bright_green());
+    }
+
+    process::exit(0)
 }
 
 fn get_config() -> (Config, File) {
@@ -114,7 +127,7 @@ fn handle_help_menu(command: &str, flags: Vec<String>) {
 }
 
 fn parse_args(args: Vec<String>) -> (String, String) {
-    let command = &args[2];
+    let command = &args[2].to_lowercase();
     let mut value = "";
 
     if !CONFIG_FLAGS.contains(&command.as_str()) {
@@ -122,7 +135,7 @@ fn parse_args(args: Vec<String>) -> (String, String) {
         process::exit(1);
     }
 
-    if command != "reset" && command != "default"
+    if command != "reset" && command != "default" && command != "list"
     {
         if args.len() <= 3 {
             config_error_flag();

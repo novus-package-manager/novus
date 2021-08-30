@@ -137,7 +137,7 @@ pub fn config_reset_help() {
         r#"
 Novus Package Manager {}
 
-Does not prompt for confirmation.
+Resets configuration to default parameters.
 
 Usage: {} {} {}
 
@@ -151,6 +151,22 @@ Alias: {}"#,
     println!("{}", config_help);
 }
 
+#[allow(unused)]
+pub fn config_list_help() {
+    let config_help = format!(
+        r#"
+Novus Package Manager {}
+
+Lists the current configuration.
+
+Usage: {} {} {}"#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "config".bright_purple(),
+        "list".white(),
+    );
+    println!("{}", config_help);
+}
 
 #[allow(unused)]
 pub fn config_error_value() {

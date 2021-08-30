@@ -36,7 +36,7 @@ pub const ALL_COMMANDS: [&str; 19] = [
   "startup",
 ];
 
-pub const CONFIG_FLAGS: [&str; 7] = [
+pub const CONFIG_FLAGS: [&str; 8] = [
   "multithreaded",
   "no-color",
   "no-progress",
@@ -44,6 +44,7 @@ pub const CONFIG_FLAGS: [&str; 7] = [
   "confirm",
   "reset",
   "default",
+  "list",
 ];
 
 #[allow(unused)]

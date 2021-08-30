@@ -276,6 +276,7 @@ Flags:
   {} Changes default progress indicator during installation.
   {} Changes default installation method.
   {} Does not prompt for confirmation.
+  {} Lists the current configuration.
   {} {} Resets configuration to default parameters.
 
 Run {} for more info about each command."#,
@@ -288,6 +289,7 @@ Run {} for more info about each command."#,
         "no-color".bright_cyan(),
         "no-progress".bright_cyan(),
         "portable".bright_cyan(),
+        "list".bright_cyan(),
         "confirm".bright_cyan(),
         "reset".bright_cyan(),
         "(default)".yellow(),
