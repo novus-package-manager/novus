@@ -200,26 +200,45 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                     .await;
                 }
                 if !url.contains(".zip") {
-                    if !verify_checksum(loc.clone(), checksum.clone()) {
-                        println!("{}", "Clearing cache and retrying".bright_blue());
-                        utils::cache::clear_cache_for_package(&package_name);
-                        threadeddownload(
-                            url.clone(),
-                            loc.clone(),
-                            threads,
-                            package_name.clone(),
-                            max,
-                            no_color,
-                        )
-                        .await;
+                    if checksum.clone() != "any" {
                         if !verify_checksum(loc.clone(), checksum.clone()) {
-                            println!(
-                                "{} {}",
-                                "Failed to Install".bright_red(),
-                                display_name.bright_red()
-                            );
-                            process::exit(1);
+                            println!("{}", "Clearing cache and retrying".bright_blue());
+                            utils::cache::clear_cache_for_package(&package_name);
+                            threadeddownload(
+                                url.clone(),
+                                loc.clone(),
+                                threads,
+                                package_name.clone(),
+                                max,
+                                no_color,
+                            )
+                            .await;
+                            if !verify_checksum(loc.clone(), checksum.clone()) {
+                                println!(
+                                    "{} {}",
+                                    "Failed to Install".bright_red(),
+                                    display_name.bright_red()
+                                );
+                                process::exit(1);
+                            }
                         }
+                    }
+                    else {
+                        if !confirm {
+                            print!(
+                                "Cannot verify checksum for {}. Do you want to continue with the installation? (Y/N): ",
+                                display_name
+                            );
+                            std::io::stdout()
+                                .flush()
+                                .ok()
+                                .expect("Could not flush stdout");
+                            let mut string: String = String::new();
+                            let _ = std::io::stdin().read_line(&mut string);
+                            if string.trim().to_lowercase() != "y" {
+                                process::exit(0);
+                            }
+                        }                        
                     }
                 }
 
