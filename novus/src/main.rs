@@ -13,8 +13,8 @@ use search::search;
 use serde_json::Value;
 use std::time::Instant;
 use uninstall::uninstaller;
-use utils::classes::config::Config;
 use utils::check_version::check_version;
+use utils::classes::config::Config;
 use utils::constants::commands::COMMANDS;
 use utils::scripts::auto_elevate_scripts::{AUTO_ELEVATE_INSTALL, AUTO_ELEVATE_UNINSTALL};
 use utils::{display_help, get_package, handle_args, handle_error::handle_error_and_exit};
@@ -38,12 +38,6 @@ async fn main() {
     let check_updates = tokio::spawn(async move {
         update_available = check_version().await;
     });
-
-    ctrlc::set_handler(move || {
-        println!("\n{}", "Aborted!".bright_cyan());
-        std::process::exit(0);
-    })
-    .expect("Error setting Ctrl-C handler");
 
     let args: Vec<String> = std::env::args().collect();
 
@@ -69,11 +63,11 @@ async fn main() {
         })
         .collect();
 
-    let mut command: &str = &command;
+    let mut command: String = command;
 
     for cmd in COMMANDS.iter() {
         if command == cmd[1] {
-            command = cmd[0];
+            command = cmd[0].to_string();
         }
     }
 
@@ -82,17 +76,34 @@ async fn main() {
     let (flags, packages) = verify_args(
         flags.clone(),
         packages.clone(),
-        command,
+        &command,
         package_list.clone(),
     );
 
-    if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) || config.no_color {
+    let packages_clone = packages.clone();
+    let command_clone = command.clone();
+
+    ctrlc::set_handler(move || {
+        if command_clone == "update" && packages_clone.contains(&"novus".to_string()) {
+            println!("\n{}", "Successfully Updated Novus!".bright_cyan());
+            std::process::exit(0);
+        } else {
+            println!("\n{}", "Aborted!".bright_cyan());
+            std::process::exit(0);
+        }
+    })
+    .expect("Error setting Ctrl-C handler");
+
+    if flags.contains(&"--no-color".to_string())
+        || flags.contains(&"-nc".to_string())
+        || config.no_color
+    {
         colored::control::set_override(false);
     }
 
     let mut code = 0;
 
-    match command {
+    match command.as_str() {
         "install" => {
             installer(packages, package_list, flags, false, config).await;
         }
@@ -202,15 +213,18 @@ fn get_config() -> Config {
             confirm: false,
         };
 
-        let config_file = std::fs::File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to create config file".to_string()));
+        let config_file = std::fs::File::create(path)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to create config file".to_string()));
 
-        serde_json::to_writer_pretty(config_file, &config_json).unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
+        serde_json::to_writer_pretty(config_file, &config_json)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
 
-        return config_json
-    }
-    else {
-        let contents = std::fs::read_to_string(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
-        let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
-        return config
+        return config_json;
+    } else {
+        let contents = std::fs::read_to_string(path)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+        let config: Config = serde_json::from_str::<Config>(&contents)
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
+        return config;
     }
 }
