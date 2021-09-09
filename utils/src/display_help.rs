@@ -1,9 +1,10 @@
 use crate::check_version::check_version;
 use crate::constants::commands::COMMANDS;
 use crate::constants::help_menu::{
-    about, clean_help, display_version, forcequit_help, info_error, info_help, install_error,
-    install_help, invalid_command, list_help, quit_error, quit_help, search_error, search_help,
-    startup_error, startup_help, uninstall_error, uninstall_help, update_error, update_help, config_error, config_help
+    about, clean_help, config_error, config_help, display_version, forcequit_help, info_error,
+    info_help, install_error, install_help, invalid_command, list_help, quit_error, quit_help,
+    search_error, search_help, startup_error, startup_help, status_error, status_help,
+    uninstall_error, uninstall_help, update_error, update_help,
 };
 
 use colored::Colorize;
@@ -21,7 +22,6 @@ pub async fn display_help(args: &Vec<String>) -> &String {
                 "novus update novus".bright_cyan()
             );
         }
-        
         std::process::exit(0);
     } else if args.len() == 2 {
         let mut command: &str = args[1].as_str();
@@ -44,6 +44,7 @@ pub async fn display_help(args: &Vec<String>) -> &String {
             "info" => info_error(),
             "startup" => startup_error(),
             "config" => config_error(),
+            "status" => status_error(),
             "--help" => about(),
             "-h" => about(),
             "-?" => about(),
@@ -85,6 +86,7 @@ pub async fn display_help(args: &Vec<String>) -> &String {
                     "info" => info_help(),
                     "startup" => startup_help(),
                     "config" => config_help(),
+                    "status" => status_help(),
                     &_ => invalid_command(command),
                 }
 

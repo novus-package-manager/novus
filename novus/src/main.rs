@@ -1,6 +1,6 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, uninstall};
+use commands::{clean, info, install, list, quit, search, status, uninstall};
 use display_help::display_help;
 
 use clean::clean;
@@ -11,6 +11,7 @@ use list::list;
 use quit::quit;
 use search::search;
 use serde_json::Value;
+use status::status;
 use std::time::Instant;
 use uninstall::uninstaller;
 use utils::check_version::check_version;
@@ -133,6 +134,9 @@ async fn main() {
         }
         "config" => {
             commands::config::config(args, flags).await;
+        }
+        "status" => {
+            status(flags, &packages[0]).await;
         }
         &_ => {}
     }

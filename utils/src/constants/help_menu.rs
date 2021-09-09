@@ -63,7 +63,13 @@ Run {} for more info about each command."#,
 
 #[allow(unused)]
 pub fn display_version() {
-    println!("{}", format!("Novus Package Manager {}", __VERSION__.bright_green().bold()));
+    println!(
+        "{}",
+        format!(
+            "Novus Package Manager {}",
+            __VERSION__.bright_green().bold()
+        )
+    );
 }
 
 #[allow(unused)]
@@ -365,6 +371,23 @@ Usage: {} {}"#,
 }
 
 #[allow(unused)]
+pub fn status_help() {
+    let status = format!(
+        r#"
+Novus Package Manager {}
+
+Displays the status of a specific application.
+
+Usage: {} {} {}"#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "status".bright_purple(),
+        "[package]".white()
+    );
+    println!("{}", status);
+}
+
+#[allow(unused)]
 pub fn install_error() {
     let install_error = format!(
         r#"
@@ -447,6 +470,23 @@ Novus Package Manager {}
         "novus search --help".bright_green()
     );
     println!("{}", search_error);
+}
+
+#[allow(unused)]
+pub fn status_error() {
+    let status_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing application to check status of.
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus status --help".bright_green()
+    );
+    println!("{}", status_error);
 }
 
 #[allow(unused)]
