@@ -5,6 +5,7 @@ use std::collections::HashMap;
 pub struct Package {
   pub package_name: String,
   pub display_name: String,
+  pub aliases: Vec<String>,
   pub exec_name: String,
   pub portable: Option<bool>,
   pub creator: String,

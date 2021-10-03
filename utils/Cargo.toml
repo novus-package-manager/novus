@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 colored = "2.0.0"
-winreg = "0.9.0"
+winreg = "0.10.1"
 winapi = { version = "0.3", features = ["winuser"] }
 difflib = "0.4.0"
 chttp = "0.5.5"
