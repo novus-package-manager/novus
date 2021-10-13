@@ -7,4 +7,6 @@ pub mod list;
 pub mod quit;
 pub mod search;
 pub mod startup;
-pub mod status;pub mod uninstall;
+pub mod status;
+pub mod uninstall;
+pub mod alias;

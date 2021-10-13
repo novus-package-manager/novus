@@ -3,3 +3,4 @@ pub mod local_package_info;
 pub mod package;
 pub mod package_info;
 pub mod config;
+pub mod aliases;

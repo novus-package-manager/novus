@@ -1,10 +1,11 @@
 mod commands;
 use colored::Colorize;
-use commands::{clean, info, install, list, quit, search, status, uninstall};
+use commands::{clean, info, install, list, quit, search, status, uninstall, alias};
 use display_help::display_help;
 
 use clean::clean;
 use handle_args::{get_arguments, verify_args};
+use alias::alias;
 use info::info;
 use install::installer;
 use list::list;
@@ -138,6 +139,9 @@ async fn main() {
         "status" => {
             status(flags, &packages[0]).await;
         }
+        "alias" => {
+            alias(args).await;
+        }
         &_ => {}
     }
 
@@ -180,6 +184,18 @@ fn create_dirs() {
     let path = std::path::Path::new(loc.as_str());
     if !path.exists() {
         let _ = std::fs::create_dir(path);
+    }
+    let loc = format!(r"{}\novus\aliases.json", appdata);
+    let path = std::path::Path::new(loc.as_str());
+    if !path.exists() {
+        let _ = std::fs::File::create(path);
+        std::fs::write(path, 
+        "
+{
+    \"aliases\": [{ \"brave\": \"browser\" }]
+}
+        ")
+            .unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
     }
     let loc = format!(r"{}\novus\scripts\auto_elevate_install.bat", appdata);
     let path = std::path::Path::new(loc.as_str());
