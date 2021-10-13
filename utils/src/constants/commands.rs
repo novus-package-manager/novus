@@ -1,5 +1,5 @@
 #[allow(unused)]
-pub const COMMANDS: [[&str; 2]; 12] = [
+pub const COMMANDS: [[&str; 2]; 13] = [
   ["install", "i"],
   ["uninstall", "u"],
   ["update", "upgrade"],
@@ -12,10 +12,11 @@ pub const COMMANDS: [[&str; 2]; 12] = [
   ["info", "details"],
   ["startup", "startup"],
   ["status", "check"],
+  ["alias", "alias"],
 ];
 
 #[allow(unused)]
-pub const ALL_COMMANDS: [&str; 21] = [
+pub const ALL_COMMANDS: [&str; 22] = [
   "install",
   "i",
   "uninstall",
@@ -36,7 +37,8 @@ pub const ALL_COMMANDS: [&str; 21] = [
   "details",
   "startup",
   "check",
-  "status"
+  "status",
+  "alias",
 ];
 
 pub const CONFIG_FLAGS: [&str; 8] = [

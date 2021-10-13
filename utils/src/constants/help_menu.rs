@@ -21,6 +21,8 @@ Commands:
   {} {} {} Quits an application or a list of applications.
   {} {} Forcequits an application or a list of applications.
   {} {} {} Customizes Novus configuration.
+  {} {} {} Displays the status of a specific application.
+  {} {} Creates an alias (alternate package name) for a package.
   
 Run {} for more info about each command."#,
         __VERSION__.bright_green().bold(),
@@ -55,6 +57,11 @@ Run {} for more info about each command."#,
         "*".bright_magenta().bold(),
         "config".bright_cyan(),
         "(global)".yellow(),
+        "*".bright_magenta().bold(),
+        "status".bright_cyan(),
+        "(check)".yellow(),
+        "*".bright_magenta().bold(),
+        "alias".bright_cyan(),
         "novus [command] --help".bright_green(),
     );
 
@@ -388,6 +395,24 @@ Usage: {} {} {}"#,
 }
 
 #[allow(unused)]
+pub fn alias_help() {
+    let alias_help = format!(
+        r#"
+Novus Package Manager {}
+
+Creates an alias (alternate package name) for a package.
+
+Usage: {} {} {} {}"#,
+        __VERSION__.bright_green().bold(),
+        "novus".bright_green(),
+        "alias".bright_purple(),
+        "[package]".white(),
+        "[alias]".white()
+    );
+    println!("{}", alias_help);
+}
+
+#[allow(unused)]
 pub fn install_error() {
     let install_error = format!(
         r#"
@@ -487,6 +512,40 @@ Novus Package Manager {}
         "novus status --help".bright_green()
     );
     println!("{}", status_error);
+}
+
+#[allow(unused)]
+pub fn alias_package_error() {
+    let alias_package_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing package to create alias for.
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus alias --help".bright_green()
+    );
+    println!("{}", alias_package_error);
+}
+
+#[allow(unused)]
+pub fn alias_value_error() {
+    let alias_value_error = format!(
+        r#"
+Novus Package Manager {}
+
+{} Missing alias value to set.
+      
+{} Use {} for more information about this command."#,
+        __VERSION__.bright_green().bold(),
+        "error".bright_red(),
+        "info".bright_blue(),
+        "novus alias --help".bright_green()
+    );
+    println!("{}", alias_value_error);
 }
 
 #[allow(unused)]

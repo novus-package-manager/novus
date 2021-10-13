@@ -4,7 +4,7 @@ use crate::constants::help_menu::{
     about, clean_help, config_error, config_help, display_version, forcequit_help, info_error,
     info_help, install_error, install_help, invalid_command, list_help, quit_error, quit_help,
     search_error, search_help, startup_error, startup_help, status_error, status_help,
-    uninstall_error, uninstall_help, update_error, update_help,
+    uninstall_error, uninstall_help, update_error, update_help, alias_help, alias_package_error
 };
 
 use colored::Colorize;
@@ -45,6 +45,7 @@ pub async fn display_help(args: &Vec<String>) -> &String {
             "startup" => startup_error(),
             "config" => config_error(),
             "status" => status_error(),
+            "alias" => alias_package_error(),
             "--help" => about(),
             "-h" => about(),
             "-?" => about(),
@@ -87,6 +88,7 @@ pub async fn display_help(args: &Vec<String>) -> &String {
                     "startup" => startup_help(),
                     "config" => config_help(),
                     "status" => status_help(),
+                    "alias" => alias_help(),
                     &_ => invalid_command(command),
                 }
 
