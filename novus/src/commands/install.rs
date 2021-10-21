@@ -526,9 +526,10 @@ pub async fn install(
             }
         }
         progress_bar.finish_and_clear();
+
     });
 
-    let cmd = tokio::spawn(async move {
+    let cmd = tokio::spawn(async move { 
         let output;
 
         if file_type == ".exe" {
@@ -536,9 +537,26 @@ pub async fn install(
                 .args(switch.clone())
                 .output();
         } else if file_type == ".msi" {
-            output = process::Command::new("MsiExec")
-                .args(&["/i", output_file.clone().as_str(), "/passive"])
-                .output();
+            // let target_dir: &str = r##"TARGETDIR="E:\Program Files""##;
+            let target_path = r"E:\Program Files";
+            let target_dir = format!(r##"TARGETDIR="{}""##, target_path);
+            let args = format!("msiexec /i {} {} /passive", output_file, target_dir);
+            println!("args: {}", args);
+
+            let bat_contents = format!(
+"@ECHO off
+msiexec /i {} {} /passive", output_file, target_dir);
+
+            let temp = std::env::var("TEMP").unwrap_or_else(|_| handle_error_and_exit("Failed to find temp directory".to_string()));
+            let loc = format!(r"{}\run_msi.bat", temp);
+            let path = std::path::Path::new(loc.as_str());
+            let _ = std::fs::File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to create bat file".to_string()));
+            std::fs::write(path, bat_contents).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+
+            output = std::process::Command::new(path)
+                .output();      
+                
+            std::fs::remove_file(path).unwrap_or_else(|_| handle_error_and_exit("Failed to remove bat file".to_string()));
         } else {
             output = process::Command::new("powershell")
                 .arg(output_file.clone())
