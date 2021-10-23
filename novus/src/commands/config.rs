@@ -1,26 +1,30 @@
-use utils::constants::commands::CONFIG_FLAGS;
-use utils::handle_error::handle_error_and_exit;
-use utils::constants::config_menu::*;
-use std::process;
-use std::path::Path;
+use colored::Colorize;
 use std::env;
 use std::fs::File;
+use std::path::Path;
+use std::process;
 use utils::classes::config::Config;
-use colored::Colorize;
+use utils::constants::commands::CONFIG_FLAGS;
+use utils::constants::config_menu::*;
+use utils::handle_error::handle_error_and_exit;
 
 #[allow(unused)]
 pub async fn config(args: Vec<String>, flags: Vec<String>) {
     let (command, old_value) = parse_args(args);
-    
+
     // Handle help menus
     handle_help_menu(&command, flags);
 
     // Validate value
     let mut value = false;
-    if command != "reset" && command != "default" && command != "list"
-    {
-        value = validate_value(&old_value);
-    }   
+    let mut path_value: String = "DEFAULT".to_string();
+    if command != "installpath" {
+        if command != "reset" && command != "default" && command != "list" {
+            value = validate_value(&old_value);
+        }
+    } else {
+        path_value = old_value;
+    }
 
     // Get Config File
     let (mut config, file) = get_config();
@@ -41,6 +45,9 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
     if command == "confirm" {
         config.confirm = value;
     }
+    if command == "installpath" {
+        config.installpath = path_value;
+    }
 
     // Reset config to defaults
     if command == "reset" || command == "default" {
@@ -49,19 +56,26 @@ pub async fn config(args: Vec<String>, flags: Vec<String>) {
         config.no_progress = false;
         config.portable = false;
         config.confirm = false;
+        config.installpath = "DEFAULT".to_string()
     }
 
     // List config
     if command == "list" {
-        println!("{}{}", "multithreaded: ".bright_cyan(), config.multithreaded);
+        println!(
+            "{}{}",
+            "multithreaded: ".bright_cyan(),
+            config.multithreaded
+        );
         println!("{}{}", "no-color: ".bright_cyan(), config.no_color);
         println!("{}{}", "no-progress: ".bright_cyan(), config.no_progress);
         println!("{}{}", "portable: ".bright_cyan(), config.portable);
         println!("{}{}", "confirm: ".bright_cyan(), config.confirm);
+        println!("{}{}", "installpath: ".bright_cyan(), config.installpath);
     }
 
     // Write Config File
-    serde_json::to_writer_pretty(file, &config).unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
+    serde_json::to_writer_pretty(file, &config)
+        .unwrap_or_else(|_| handle_error_and_exit("Failed to write config file".to_string()));
 
     // Confirmation Message
     if command != "list" {
@@ -77,10 +91,13 @@ fn get_config() -> (Config, File) {
     });
     let loc = format!(r"{}\novus\config\config.json", appdata);
     let path = Path::new(loc.as_str());
-    let contents = std::fs::read_to_string(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
-    let config: Config = serde_json::from_str::<Config>(&contents).unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
+    let contents = std::fs::read_to_string(path)
+        .unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+    let config: Config = serde_json::from_str::<Config>(&contents)
+        .unwrap_or_else(|_| handle_error_and_exit("Failed to parse config file".to_string()));
 
-    let file = File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
+    let file = File::create(path)
+        .unwrap_or_else(|_| handle_error_and_exit("Failed to open config file".to_string()));
 
     (config, file)
 }
@@ -89,38 +106,42 @@ fn validate_value(value: &str) -> bool {
     let value = value.to_lowercase();
     if value == "true" || value == "yes" {
         return true;
-    }
-    else if value == "false" || value == "no" {
+    } else if value == "false" || value == "no" {
         return false;
-    }
-    else {
+    } else {
         config_error_value();
         process::exit(1);
     }
 }
 
 fn handle_help_menu(command: &str, flags: Vec<String>) {
-    if flags.contains(&"-h".to_string()) || flags.contains(&"-?".to_string()) || flags.contains(&"--help".to_string()) {
+    if flags.contains(&"-h".to_string())
+        || flags.contains(&"-?".to_string())
+        || flags.contains(&"--help".to_string())
+    {
         if command == "multithreaded" {
-            config_multithreaded_help();        
+            config_multithreaded_help();
         }
         if command == "no-color" {
-            config_no_color_help();        
+            config_no_color_help();
         }
         if command == "no-progress" {
-            config_no_progress_help();        
+            config_no_progress_help();
         }
         if command == "portable" {
-            config_portable_help();        
+            config_portable_help();
         }
         if command == "confirm" {
-            config_confirm_help();       
+            config_confirm_help();
+        }
+        if command == "intallpath" {
+            config_confirm_help();
         }
         if command == "reset" {
             config_reset_help();
         }
         if command == "default" {
-            config_reset_help();     
+            config_reset_help();
         }
         process::exit(0);
     }
@@ -135,15 +156,14 @@ fn parse_args(args: Vec<String>) -> (String, String) {
         process::exit(1);
     }
 
-    if command != "reset" && command != "default" && command != "list"
-    {
+    if command != "reset" && command != "default" && command != "list" {
         if args.len() <= 3 {
             config_error_flag();
             process::exit(1);
         } else {
             value = &args[3];
         }
-    } 
+    }
 
     (command.to_owned(), value.to_string())
 }

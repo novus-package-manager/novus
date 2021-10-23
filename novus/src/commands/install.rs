@@ -25,6 +25,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
     let mut confirm = config.confirm;
     let mut portable_flag = config.portable;
     let mut multithreaded = config.multithreaded;
+    let mut installpath: String = config.installpath;
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }

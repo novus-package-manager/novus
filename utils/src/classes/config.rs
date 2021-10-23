@@ -7,4 +7,5 @@ pub struct Config {
     pub no_progress: bool,
     pub portable: bool,
     pub confirm: bool,
+    pub installpath: String,
 }

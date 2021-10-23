@@ -41,30 +41,29 @@ pub const ALL_COMMANDS: [&str; 22] = [
   "alias",
 ];
 
-pub const CONFIG_FLAGS: [&str; 8] = [
+pub const CONFIG_FLAGS: [&str; 9] = [
   "multithreaded",
   "no-color",
   "no-progress",
   "portable",
   "confirm",
   "reset",
+  "installpath",
   "default",
   "list",
 ];
 
 #[allow(unused)]
-pub const INSTALL_FLAGS: [[&str; 2]; 4] = [
+pub const INSTALL_FLAGS: [[&str; 2]; 5] = [
   ["--no-progress", "-np"],
   ["--no-color", "-nc"],
   ["--portable", "-p"],
   ["--multithreaded", "-m"],
+  ["--installpath", "-path"],
 ];
 
 #[allow(unused)]
-pub const UNINSTALL_FLAGS: [[&str; 2]; 2] = [
-  ["--no-color", "-nc"],
-  ["--portable", "-p"],
-];
+pub const UNINSTALL_FLAGS: [[&str; 2]; 2] = [["--no-color", "-nc"], ["--portable", "-p"]];
 
 #[allow(unused)]
 pub const LIST_FLAGS: [[&str; 2]; 4] = [

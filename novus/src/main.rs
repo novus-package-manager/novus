@@ -233,6 +233,7 @@ fn get_config() -> Config {
             no_progress: false,
             portable: false,
             confirm: false,
+            installpath: "DEFAULT".to_string(),
         };
 
         let config_file = std::fs::File::create(path)
