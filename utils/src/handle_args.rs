@@ -196,22 +196,43 @@ pub fn verify_args(
     (new_flags, new_packages)
 }
 
-pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>) {
+pub fn get_arguments(args: &Vec<String>) -> (Vec<String>, Vec<String>, String) {
     let command: &str = &args[1];
     let mut flags: Vec<String> = vec![];
     let mut packages: Vec<String> = vec![];
+    let mut install_path: String = "DEFAULT".to_string();
 
     for arg in 2..args.len() {
         if ALL_COMMANDS.contains(&command) {
             if args[arg].starts_with("-") {
                 flags.push(args[arg].clone());
             } else {
-                packages.push(args[arg].clone().to_lowercase());
+                packages.push(args[arg].clone());
             }
         } else {
             invalid_command(command);
         }
     }
 
-    (flags, packages)
+    if flags.contains(&"--installpath".to_string()) || flags.contains(&"-path".to_string()) {
+        if flags.contains(&"--installpath".to_string()) {
+            let index = args.iter().position(|x| x == "--installpath").unwrap();
+            install_path = args[index + 1].to_owned();
+            let index = packages.iter().position(|x| x == &install_path).unwrap();
+            packages.remove(index);
+        }
+        if flags.contains(&"-path".to_string()) {
+            let index = args.iter().position(|x| x == "-path").unwrap();
+            install_path = args[index + 1].to_owned();
+            let index = packages.iter().position(|x| x == &install_path).unwrap();
+            packages.remove(index);
+        }
+    }
+
+    let mut packages_new: Vec<String> = vec![];
+    for pkg in packages.clone() {
+        packages_new.push(pkg.to_lowercase());
+    }
+
+    (flags, packages_new, install_path)
 }

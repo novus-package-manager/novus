@@ -73,7 +73,9 @@ async fn main() {
         }
     }
 
-    let (flags, packages) = get_arguments(&args);
+    let (flags, packages, install_path) = get_arguments(&args);
+
+    // println!("install path: {}", install_path);
 
     let (flags, packages) = verify_args(
         flags.clone(),
@@ -107,13 +109,13 @@ async fn main() {
 
     match command.as_str() {
         "install" => {
-            installer(packages, package_list, flags, false, config).await;
+            installer(packages, package_list, flags, false, config, install_path).await;
         }
         "uninstall" => {
             code = uninstaller(packages, flags, package_list, config).await;
         }
         "update" => {
-            code = installer(packages, package_list, flags, true, config).await;
+            code = installer(packages, package_list, flags, true, config, install_path).await;
         }
         "list" => {
             list(package_list, flags, args).await;

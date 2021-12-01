@@ -19,13 +19,17 @@ use utils::{cache, checksum, get_package, handle_error};
 use zip::ZipArchive;
 use utils::classes::config::Config;
 
-pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, flags: Vec<String>, update: bool, config: Config) -> i32 {
+pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, flags: Vec<String>, update: bool, config: Config, mut install_path: String) -> i32 {
     let mut no_progress = config.no_progress;
     let mut no_color = config.no_color;
     let mut confirm = config.confirm;
     let mut portable_flag = config.portable;
     let mut multithreaded = config.multithreaded;
-    let mut installpath: String = config.installpath;
+
+    if install_path.clone() == "DEFAULT" {
+        install_path = config.installpath;
+    }
+
     if flags.contains(&"--no-color".to_string()) || flags.contains(&"-nc".to_string()) {
         no_color = true;
     }
@@ -96,8 +100,8 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
 
     println!("{}", "Installing Packages".bright_green());
 
-    for pkg in packages.iter() {
-        let mut max = true;
+    for pkg in packages.iter() {        
+        let mut max = true;        
         let pkg_split: Vec<&str> = pkg.split("@").collect();
         let mut pkg_name = pkg.as_str();
         let mut desired_version = "0".to_string();
@@ -184,6 +188,9 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                 desired_version.to_string().clone(),
                 executable_type.clone(),
             );
+
+            let install_path_c = install_path.clone();
+
             handles.push(tokio::spawn(async move {
                 if !exists {
                     let mut new_loc = loc.clone();
@@ -272,6 +279,7 @@ pub async fn installer(inital_packages: Vec<String>, package_list: Vec<&str>, fl
                     multi,
                     no_color,
                     file_type,
+                    install_path_c.clone()
                 )
                 .await;
                 code
@@ -478,6 +486,7 @@ pub async fn install(
     multi: bool,
     no_color: bool,
     file_type: String,
+    install_path: String
 ) -> i32 {
     let progress_bar = ProgressBar::new(0);
     let pb = progress_bar.clone();
@@ -539,25 +548,33 @@ pub async fn install(
                 .output();
         } else if file_type == ".msi" {
             // let target_dir: &str = r##"TARGETDIR="E:\Program Files""##;
-            let target_path = r"E:\Program Files";
-            let target_dir = format!(r##"TARGETDIR="{}""##, target_path);
-            let args = format!("msiexec /i {} {} /passive", output_file, target_dir);
-            println!("args: {}", args);
-
-            let bat_contents = format!(
+            // let target_path = r"E:\Program Files";
+            if install_path != "DEFAULT" {
+                let target_dir = format!(r##"TARGETDIR="{}""##, install_path);
+                let args = format!("msiexec /i {} {} /passive", output_file, target_dir);
+                // println!("args: {}", args);
+    
+                let bat_contents = format!(
 "@ECHO off
 msiexec /i {} {} /passive", output_file, target_dir);
-
-            let temp = std::env::var("TEMP").unwrap_or_else(|_| handle_error_and_exit("Failed to find temp directory".to_string()));
-            let loc = format!(r"{}\run_msi.bat", temp);
-            let path = std::path::Path::new(loc.as_str());
-            let _ = std::fs::File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to create bat file".to_string()));
-            std::fs::write(path, bat_contents).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
-
-            output = std::process::Command::new(path)
-                .output();      
-                
-            std::fs::remove_file(path).unwrap_or_else(|_| handle_error_and_exit("Failed to remove bat file".to_string()));
+    
+                let temp = std::env::var("TEMP").unwrap_or_else(|_| handle_error_and_exit("Failed to find temp directory".to_string()));
+                let loc = format!(r"{}\run_msi.bat", temp);
+                let path = std::path::Path::new(loc.as_str());
+                let _ = std::fs::File::create(path).unwrap_or_else(|_| handle_error_and_exit("Failed to create bat file".to_string()));
+                std::fs::write(path, bat_contents).unwrap_or_else(|_| handle_error_and_exit("Failed to write bat file".to_string()));
+    
+                output = std::process::Command::new(path)
+                    .output();      
+                    
+                std::fs::remove_file(path).unwrap_or_else(|_| handle_error_and_exit("Failed to remove bat file".to_string()));
+            }
+            else {
+                output = process::Command::new("msiexec")
+                .args(&["/i", output_file.clone().as_str(), "/passive"])
+                .output();
+            }
+            
         } else {
             output = process::Command::new("powershell")
                 .arg(output_file.clone())
